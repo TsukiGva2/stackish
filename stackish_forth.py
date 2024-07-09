@@ -1,5 +1,5 @@
-from functools import partial
-from queue import deque
+import re
+from collections import deque
 
 # - ls
 # . .. .git/ main.py
@@ -28,45 +28,73 @@ DELIM_QUOTE_BEGIN = "'("
 DELIM_QUOTE_END = ")"
 
 DELIM_SQUOTE_BEGIN = "'"
-DELIM_SQUOTE_END = None # applies to one word
+DELIM_SQUOTE_END = None  # applies to one word
 
 INDEX_QUOTE_BEGIN = len(DELIM_QUOTE_BEGIN)
 INDEX_QUOTE_END = -len(DELIM_QUOTE_END)
 
 INDEX_SQUOTE_BEGIN = len(DELIM_SQUOTE_BEGIN)
-#INDEX_SQUOTE_END = -len(DELIM_SQUOTE_END)
+# INDEX_SQUOTE_END = -len(DELIM_SQUOTE_END)
 
 DELIM_COLON_BEGIN = ":"
 DELIM_COLON_END = ";"
 
+HEADER_EMPTY = "_"
+
+
 class Forth_UnderflowError(IndexError): ...
+
+
+class Forth_EvaluationError(RuntimeError): ...
+
+
+class Forth_CompilationError(SyntaxError): ...
+
+
+class WordTable: ...
 
 
 class Runtime:
     def __init__(self):
         self.stack = deque([])
         self.state = INTERPRET
-        self.words = {}
+        self.words = WordTable()
 
-        self.word_header = "_"
+    # operations
+    def push(self, *args):
+        self.stack.extend(args)
 
-    def push(self, n):
-        print(f"PUSH {n}")
-    def drop(self, n):
-        print(f"DROP {n}")
+    def drop(self):
+        self.stack.pop()
+
     def dup(self):
-        print(f"DUP  {n}")
+        n = self.stack.pop()
+        self.push(n, n)
 
     def header(self, w):
-        print(f"HEADER = {w}")
+        self.words.new(w)
 
-    def switch(self, s):
-        print(f"STATE = {s}")
+    def close_header(self):
+        self.words.end()
 
-    def exec(self, code):
-        for op in code:
-            for f in op:
-                f(self)
+    def fetch(self, w):
+        instruction = self.words.find(w)
+        self.eval(instruction)
+
+    # functs
+    def eval(self, instruction):
+        return instruction.run(self)
+
+    def exec(self, instructions):
+        return (self.eval(i) for i in instructions)
+
+
+class Instruction:
+    def __init__(self, *operations, name = "_"):
+        self.operations = operations
+        self.name = name
+        self.
+
 
 class Compiler:
     def __init__(self):
@@ -75,30 +103,55 @@ class Compiler:
 
         self.skip = False
 
+        self.match_word = re.compile(
+            r"[?/A-Za-z!@#$%&*()\[\]^~'`\"\\+=-_.,><{}][?/A-Za-z0-9!@#$%&*()\[\]^~'`\"\\+=-_.,><{}]+"
+        )
+
     # utils
     def next(self):
         try:
             return next(self.words)
         except StopIteration:
-            raise EOFError("Unexpected EOF.") # TODO
+            raise EOFError("Unexpected EOF.")  # TODO
+
+    def word(self, w):
+        if self.match_word.match(w):
+            return w
+        raise Forth_CompilationError(f"Invalid identifier '{w}")
 
     # operations
     def push(self, n):
-        return (lambda state: state.push(n),)
+        return Instruction(
+            lambda state: state.push(n),
+        )
 
     def drop(self, count):
-        return (lambda state: state.drop(count),)
+        return Instruction(
+            lambda state: state.drop(count),
+        )
 
     def dup(self):
-        return (lambda state: state.dup(),)
+        return Instruction(
+            lambda state: state.dup(),
+        )
 
     def colon(self):
-        word = self.next()
-        return (lambda state: state.switch(COMPILE),
-                lambda state: state.header(word))
+        word = self.word(self.next())
+        return Instruction(
+            lambda state: state.switch(COMPILE),
+            lambda state: state.header(word),
+        )
 
     def endcolon(self):
-        return (lambda state: state.switch(INTERPRET),)
+        return Instruction(
+            lambda state: state.switch(INTERPRET),
+            lambda state: state.close_header(),
+        )
+
+    def find(self, word):
+        return Instruction(
+            lambda state: state.fetch(word),
+        )
 
     # makers
     def quote(self, word):
@@ -115,15 +168,15 @@ class Compiler:
         quote.append(w[:INDEX_QUOTE_END])
 
         result = " ".join(quote)
-
         return self.push(result)
 
     def simple_quote(self, word):
         return self.push(word[INDEX_SQUOTE_BEGIN:])
 
     def symbol(self, word):
-        self.symbols = 0
-        return self.push(0)
+        w = self.word(word)
+
+        return self.find(w)
 
     def number(self, num):
         n = float(num)
