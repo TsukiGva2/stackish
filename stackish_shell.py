@@ -41,9 +41,19 @@ class ConditionalREPL:
 @final
 class Shell(ConditionalREPL):
     def __init__(self):
+        self.commander = None
         self.command: Command = Command()
+
         self.prompt: str = "- "
-        self.status: int = 0  # TODO: enum like
+        self.status: int = 0  # TODO: enum likea
+
+    def build_command(self, line):
+        if not self.commander:
+            return Command(line)
+        return Command(line, self.commander)
+
+    def set_commander(self, commander):
+        self.commander = commander
 
     @override
     def eval(self):
@@ -55,7 +65,7 @@ class Shell(ConditionalREPL):
     @override
     def read(self):
         line = str(ReadLine(self.prompt))
-        self.command = Command(line)
+        self.command = self.build_command(line)
 
     @override
     def condition(self) -> bool:  # TODO
