@@ -42,16 +42,56 @@ DELIM_COLON_END = ";"
 HEADER_EMPTY = "_"
 
 
+
 class Forth_UnderflowError(IndexError): ...
-
-
 class Forth_EvaluationError(RuntimeError): ...
-
-
 class Forth_CompilationError(SyntaxError): ...
 
 
-class WordTable: ...
+
+class WordHeader:
+    def __init__(self, header=HEADER_EMPTY):
+        self.header = header
+        self.instructions = []
+
+    def compile(self):
+        return {self.header: self.instructions}
+
+    def clear(self):
+        self.header = HEADER_EMPTY
+        self.instructions = []
+
+    def insert(self, instruction):
+        self.instructions.append(instruction)
+
+
+
+class WordTable:
+    def __init__(self):
+        self.words = {}
+
+        self.header = WordHeader()
+
+    def new(self, w):
+        self.header = WordHeader(w)
+        return w
+
+    def end(self):
+        name = self.header.header
+
+        self.words.update(self.header.compile())
+        self.header.clear()
+
+        return name
+
+    def insert(self, instruction):
+        self.header.insert(instruction)
+
+        return instruction.name
+
+    def find(self, w):
+        return self.words[w]
+
 
 
 class Runtime:
@@ -64,36 +104,66 @@ class Runtime:
     def push(self, *args):
         self.stack.extend(args)
 
+        return args
+
     def drop(self):
         self.stack.pop()
+
+        return 0
 
     def dup(self):
         n = self.stack.pop()
         self.push(n, n)
 
+        return n
+
     def header(self, w):
-        self.words.new(w)
+        return self.words.new(w)
 
     def close_header(self):
-        self.words.end()
+        return self.words.end()
 
     def fetch(self, w):
-        instruction = self.words.find(w)
-        self.eval(instruction)
+        instructions = self.words.find(w)
+        self.exec(instructions)
+
+        return w
+
+    def insert(self, w):
+        return self.words.insert(w)
+
+    def switch(self, s):
+        if self.state == s:
+            raise Forth_EvaluationError("Unexpected state switch (double :/;)")
+
+        self.state = s
+
+        return s
 
     # functs
     def eval(self, instruction):
         return instruction.run(self)
 
     def exec(self, instructions):
-        return (self.eval(i) for i in instructions)
+        return [self.eval(i) for i in instructions]
+
 
 
 class Instruction:
-    def __init__(self, *operations, name = "_"):
+    def __init__(self, *operations, name = "_", compiled = True):
         self.operations = operations
+
         self.name = name
-        self.
+        self.compiled = compiled
+
+        # print(f"generated: {name}")
+
+    def run(self, state):
+        if not self.compiled or state.state == INTERPRET:
+            return [op(state) for op in self.operations]
+
+        return state.insert(self)
+
 
 
 class Compiler:
@@ -123,16 +193,19 @@ class Compiler:
     def push(self, n):
         return Instruction(
             lambda state: state.push(n),
+            name = f"PUSH {n}"
         )
 
     def drop(self, count):
         return Instruction(
             lambda state: state.drop(count),
+            name = f"DROP {count}"
         )
 
     def dup(self):
         return Instruction(
             lambda state: state.dup(),
+            name = "DUP"
         )
 
     def colon(self):
@@ -140,17 +213,22 @@ class Compiler:
         return Instruction(
             lambda state: state.switch(COMPILE),
             lambda state: state.header(word),
+            name = f"FUNC {word}",
+            compiled = False
         )
 
     def endcolon(self):
         return Instruction(
             lambda state: state.switch(INTERPRET),
             lambda state: state.close_header(),
+            name = "END",
+            compiled = False
         )
 
     def find(self, word):
         return Instruction(
             lambda state: state.fetch(word),
+            name = f"FIND {word}"
         )
 
     # makers
@@ -212,13 +290,11 @@ class Compiler:
             yield meaning
 
 
+
 class System:
     def __init__(self):
         self.state = Runtime()
         self.compiler = Compiler()
-
-    def compile(self): ...
-    def interpret(self): ...
 
     def do_string(self, line):
         if line == "":
@@ -228,4 +304,4 @@ class System:
 
         compiled = self.compiler.compile(line)
 
-        self.state.exec(compiled)
+        return self.state.exec(compiled)
