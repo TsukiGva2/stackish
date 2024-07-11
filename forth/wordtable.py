@@ -105,14 +105,29 @@ class WordHeader:
 # >= -> push(): pop() >= pop()
 # <= -> push(): pop() <= pop()
 
+# ... -> no-op
+
 # => -> if not pop() then state = SKIP
 # +noskip end -> state = INTERPRET
 
 """
 +noskip
 : or
-    state?
+    state? 'SKIP = =>
 ;
+
+: else
+    pop() =>
+;
+
+EXAMPLE: ```
+    '/bin/sh exists? '(file exists) =
+    =>
+        ...
+    or '(no such file) else
+        ...
+    end
+```
 """
 
 # $ -> push(): ( getenv(): ENV=pop() )
@@ -122,38 +137,45 @@ class WordHeader:
 
 """
 PROTO SHELL -> [TODO:shell.run()] as Run()
+SIGNATURE Run() -> CMD, STDIN=NONE
 
-: SHELL ( PIPE cmd -- )
-    swap
+: SHELL ( cmd pipe -- _Process )
     dup
 
-    pipe? => swap Run(): pop() pop()
-    or Run(): pop()
+    pipe? => swap Run(2)
+    or Run(1)
+    end
 ;
 """
 
-# ? -> SHELL():
+# ( _Process -- Int )
+# status -> waitProcess(): pop()
+# toFile -> processToFile(): pop()
+
+# ? -> SHELL status
+## | -> SHELL @ do we even need this?
+# '<-' -> SHELL toFile
+
+# -. -> pop()
 
 """
+-------------------------------------------------------
+  FUNCTION      |         STATE         |   ATTRIBUTE
+-------------------------------------------------------
 2 2 =
-=> INTERPRET
-
-    1 2 => SKIP
-    end INTERPRET
-
-    3 3 => INTERPRET
-
-        2 4 => SKIP
-
-        end INTERPRET
-
-        4 4 => INTERPRET
-
-        end INTERPRET
-
-    end INTERPRET
-
-end INTERPRET
+=>                      INTERPRET
+    1 2 =>              SKIP
+        'what .
+    end                 INTERPRET           +noskip
+    3 3 =>              INTERPRET
+        2 4 =>          SKIP
+            'what .
+        end             INTERPRET           +noskip
+        4 4 =>          INTERPRET
+            'ok .
+        end             INTERPRET           +noskip
+    end                 INTERPRET           +noskip
+end                     INTERPRET           +noskip
 """
 
 
@@ -187,8 +209,8 @@ class WordTable:
             "|": StdFunctions.pipe(),
             "<-": StdFunctions.tofile(),
             # State
-            "@": StdFunctions.fetchvar(),
-            "!": StdFunctions.definevar(),
+            #"@": StdFunctions.fetchvar(),
+            #"!": StdFunctions.definevar(),
             # Misc
             "-.": StdFunctions.pop(),
         }
