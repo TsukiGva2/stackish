@@ -16,10 +16,49 @@ class WordHeader:
     def insert(self, instruction):
         self.instructions.append(instruction)
 
+import .std as forth_std
 
 class WordTable:
     def __init__(self):
-        self.words = {}
+        self.words = {
+                # IO
+                   ".": forth_std.put(),
+                "read": forth_std.ask(),
+
+                # operators
+                "+": forth_std.add(),
+                "-": forth_std.sub(),
+                "/": forth_std.div(),
+                "*": forth_std.mul(),
+                "^": forth_std.pow(),
+                "~": forth_std.non(),
+
+                # logic
+                 "=": forth_std.equals(),
+                "~=": forth_std.nequal(),
+                 ">": forth_std.greater(),
+                 "<": forth_std.lesser(),
+                ">=": forth_std.geq(),
+                "<=": forth_std.leq(),
+
+                 "=>": forth_std.implies(),
+
+                # environment
+                "$": forth_std.env(),
+                "export": forth_std.setenv(),
+
+                # Shell
+                 "?": forth_std.shell(),
+                 "|": forth_std.pipe(),
+                "->": forth_std.tofile(),
+
+                # State
+                "@": forth_std.fetchvar(),
+                "!": forth_std.definevar(),
+
+                # Misc
+                "-.": forth_std.pop()
+        }
 
         self.header = WordHeader()
 

@@ -25,6 +25,13 @@ def functions():
     """
     )
 
+    print("Operations")
+    dostring(
+        """
+            : ping '(ping www.google.com) ? => . ;
+        """
+    )
+
 
 def run():
     functions()
