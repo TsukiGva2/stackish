@@ -1,9 +1,4 @@
-# WORDS
-
-### NOTE: Formatting
-# '(file name \.) fmt
-
-## Usable example
+# Usable example
 
 ```
     # (filename -- msg)     # specifying arguments (optional but recommended)
@@ -76,7 +71,16 @@
 # OK. FILE EXISTS.
 ```
 
-# Implementations
+# NOTE: String Formatting
+*NOT IMPLEMENTED @WIP*
+
+### Dot syntax: any '\\.'s are substituted by {pop()}
+
+```
+'(file name \\.) fmt
+```
+
+# Basic word Implementations
 
 ## . -> print(): pop()
 ## read -> push(): input()
@@ -96,9 +100,49 @@
 ## <= -> push(): pop() <= pop()
 
 ## ... -> no-op
+---
+
+# Conditional execution
 
 ## => -> if not pop() then state = SKIP
 ## +noskip end -> state = INTERPRET
+
+### TABLE: Analysing how SKIP works
+```
+-------------------------------------------------------
+  FUNCTION      |         STATE         |   ATTRIBUTE
+-------------------------------------------------------
+2 2 =
+=>                      INTERPRET
+    1 2 =>              SKIP
+        'what .
+    end                 INTERPRET           +noskip
+    3 3 =>              INTERPRET
+        2 4 =>          SKIP
+            'what .
+        end             INTERPRET           +noskip
+        4 4 =>          INTERPRET
+            'ok .
+        end             INTERPRET           +noskip
+    end                 INTERPRET           +noskip
+end                     INTERPRET           +noskip
+```
+
+### As implemented in forth/instruction.py
+```py
+    # ... (on Instruction.__init__)
+        try:
+            self.skippable = flags["skippable"]
+        except KeyError:
+            self.skippable = True
+    # ...
+
+    def run(self, state):
+        if self.skippable and state.state == SKIP:
+            return []
+    
+    # ...
+```
 
 ## OR:
 ---
@@ -115,10 +159,12 @@
     '/bin/sh exists? '(file exists) =
     =>
         ...
-    or '(no such file) else
+    or
         ...
     end
 ```
+
+# Shell/Environment
 
 ## $ -> push(): ( getenv(): ENV=pop() )
 ## export -> push(): ( setenv(): ENV=pop() VAL=pop() )
@@ -143,7 +189,7 @@
 ---
 
 ## -- NOTE: Wait is done automatically atm (see above)
-## status -> waitProcess(): process? pop()
+## ~status -> waitProcess(): process? pop()~
 
 ## toFile -> processToFile(): process? pop()
 
@@ -153,26 +199,7 @@
 
 ## '<-' -> SHELL toFile
 
+# Misc/Useless
+
 # -. -> pop()
-
-```
--------------------------------------------------------
-  FUNCTION      |         STATE         |   ATTRIBUTE
--------------------------------------------------------
-2 2 =
-=>                      INTERPRET
-    1 2 =>              SKIP
-        'what .
-    end                 INTERPRET           +noskip
-    3 3 =>              INTERPRET
-        2 4 =>          SKIP
-            'what .
-        end             INTERPRET           +noskip
-        4 4 =>          INTERPRET
-            'ok .
-        end             INTERPRET           +noskip
-    end                 INTERPRET           +noskip
-end                     INTERPRET           +noskip
-```
-
 
