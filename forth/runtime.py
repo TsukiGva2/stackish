@@ -1,7 +1,8 @@
 from collections import deque
 
 from .configuration import INTERPRET
-from .errors import Forth_EvaluationError
+
+# from .errors import Forth_EvaluationError
 from .wordtable import WordTable
 
 
@@ -48,7 +49,7 @@ class Runtime:
 
     def switch(self, s):
         if self.state == s:
-            #raise Forth_EvaluationError("Unexpected state switch (double :/;)")
+            # raise Forth_EvaluationError("Unexpected state switch (double :/;)")
             return
 
         self.state = s

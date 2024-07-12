@@ -77,7 +77,7 @@
 ### Dot syntax: any '\\.'s are substituted by {pop()}
 
 ```
-'(file name \\.) fmt
+'(file name \.) fmt
 ```
 
 # Basic word Implementations
@@ -114,14 +114,14 @@
 -------------------------------------------------------
 2 2 =
 =>                      INTERPRET
-    1 2 =>              SKIP
+    1 2 = =>            SKIP
         'what .
     end                 INTERPRET           +noskip
-    3 3 =>              INTERPRET
-        2 4 =>          SKIP
+    3 3 = =>            INTERPRET
+        2 4 = =>        SKIP
             'what .
         end             INTERPRET           +noskip
-        4 4 =>          INTERPRET
+        4 4 = =>        INTERPRET
             'ok .
         end             INTERPRET           +noskip
     end                 INTERPRET           +noskip
@@ -145,7 +145,6 @@ end                     INTERPRET           +noskip
 ```
 
 ## OR:
----
 
 ```
 +noskip
@@ -163,6 +162,7 @@ end                     INTERPRET           +noskip
         ...
     end
 ```
+---
 
 # Shell/Environment
 
@@ -201,5 +201,5 @@ end                     INTERPRET           +noskip
 
 # Misc/Useless
 
-# -. -> pop()
+## -. -> pop()
 

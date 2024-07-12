@@ -7,11 +7,9 @@ class CommandNotFound(FileNotFoundError): ...
 
 @final
 class Command:
-    def __init__(self, cmdline: str = "", commander=None):
+    def __init__(self, cmdline: str = ""):
         self.cmdline: str = cmdline
         self.args: list[str] = cmdline.split()
-
-        self.commander = commander
 
         self.process: subprocess.Popen = None
 

@@ -50,7 +50,11 @@ class Shell(ConditionalREPL):
     def build_command(self, line):
         if not self.commander:
             return Command(line)
-        return Command(line, self.commander)
+
+        try:
+            return self.commander.run(line)
+        except self.commander.NotFound:
+            return Command(line)
 
     def set_commander(self, commander):
         self.commander = commander

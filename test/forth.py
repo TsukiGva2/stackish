@@ -6,14 +6,11 @@ def dostring(code):
     shell = Shell()
     s = sf.System(shell=shell)
 
-    s.do_string(code)
-    #print(s.state.stack)
+    print(s.do_string(code))
+    print(s.state.stack)
 
 
 def functions():
-    print("testing functions: ")
-
-    print("nesting: ")
     dostring(
         """
         : numbers
@@ -37,11 +34,9 @@ def functions():
                 or
                     '(success)
                 end
-                '(hey) . 12 3 45
+                .
             ;
-
-            : wow 1 1 = => 'cool . end ;
-            0 0 = => wow end 1 .
+            google
         """
     )
 

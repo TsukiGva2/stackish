@@ -1,6 +1,7 @@
-#from .compiler import Compiler
-from .instruction import Instruction
+# from .compiler import Compiler
 from .configuration import INTERPRET, SKIP
+from .instruction import Instruction
+
 
 class StdFunctions:
     # IO -- FIXME @DESIGN: Implement both at state.io
@@ -20,18 +21,23 @@ class StdFunctions:
     @staticmethod
     def add():
         return Instruction(lambda state: state.push(state.drop() + state.drop()))
+
     @staticmethod
     def sub():
         return Instruction(lambda state: state.push(state.drop() - state.drop()))
+
     @staticmethod
     def mul():
         return Instruction(lambda state: state.push(state.drop() * state.drop()))
+
     @staticmethod
     def div():
         return Instruction(lambda state: state.push(state.drop() / state.drop()))
+
     @staticmethod
     def pow():
         return Instruction(lambda state: state.push(state.drop() ** state.drop()))
+
     @staticmethod
     def non():
         return Instruction(lambda state: state.push(not state.drop()))
@@ -40,18 +46,23 @@ class StdFunctions:
     @staticmethod
     def equals():
         return Instruction(lambda state: state.push(state.drop() == state.drop()))
+
     @staticmethod
     def nequals():
         return Instruction(lambda state: state.push(state.drop() != state.drop()))
+
     @staticmethod
     def greater():
         return Instruction(lambda state: state.push(state.drop() > state.drop()))
+
     @staticmethod
     def lesser():
         return Instruction(lambda state: state.push(state.drop() < state.drop()))
+
     @staticmethod
     def greater_or_equals():
         return Instruction(lambda state: state.push(state.drop() >= state.drop()))
+
     @staticmethod
     def lesser_or_equals():
         return Instruction(lambda state: state.push(state.drop() <= state.drop()))
@@ -60,12 +71,7 @@ class StdFunctions:
     @staticmethod
     def implies():
         return Instruction(
-            lambda state: (
-                state.switch(
-                    INTERPRET if state.drop()
-                    else SKIP
-                )
-            )
+            lambda state: (state.switch(INTERPRET if state.drop() else SKIP))
         )
 
     @staticmethod
@@ -76,34 +82,34 @@ class StdFunctions:
         ;
         """
         return Instruction(
-                # _state? =
-                lambda state: state.push(state.state == SKIP),
-                # =>
-                *StdFunctions.implies().operations,
-                skippable=False # cant skip an or
-                                # otherwise it could
-                                # not reset the skipping
-                                # it kinda serves as
-                                # an alternate end
-                                # which doubles down
-                                # as a surprise IMPLIES(=>)
+            # _state? =
+            lambda state: state.push(state.state == SKIP),
+            # =>
+            *StdFunctions.implies().operations,
+            skippable=False  # cant skip an or
+            # otherwise it could
+            # not reset the skipping
+            # it kinda serves as
+            # an alternate end
+            # which doubles down
+            # as a surprise IMPLIES(=>)
         )
 
     @staticmethod
     def end():
         return Instruction(
-                # NOTE:
-                # This doesnt interfere with the COMPILE
-                # state at all because of the magic of
-                # Instruction flags, the COMPILED flag
-                # is set on all instructions by default
-                # and an Instruction with the COMPILED
-                # flag will not evaluate if the state is
-                # set to COMPILED.
-                lambda state: state.switch(INTERPRET),
-                skippable=False # Can't skip an end
-                                # otherwise the skipping
-                                # would never... end
+            # NOTE:
+            # This doesnt interfere with the COMPILE
+            # state at all because of the magic of
+            # Instruction flags, the COMPILED flag
+            # is set on all instructions by default
+            # and an Instruction with the COMPILED
+            # flag will not evaluate if the state is
+            # set to COMPILED.
+            lambda state: state.switch(INTERPRET),
+            skippable=False,  # Can't skip an end
+            # otherwise the skipping
+            # would never... end
         )
 
     # environment
@@ -115,7 +121,9 @@ class StdFunctions:
 
     # FIXME @WIP -- useless without "state.setenv"
     def setenv():
-        return Instruction(lambda state: state.setenv(name=state.drop(), value=state.drop()))
+        return Instruction(
+            lambda state: state.setenv(name=state.drop(), value=state.drop())
+        )
 
     # Shell Interaction
     def run_command():
@@ -125,4 +133,3 @@ class StdFunctions:
 
     def pop():
         return Instruction(lambda state: state.drop())
-

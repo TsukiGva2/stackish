@@ -46,7 +46,7 @@ class Compiler:
 
     @staticmethod
     def drop():
-        return Instruction(lambda state: state.drop(), name=f"DROP")
+        return Instruction(lambda state: state.drop(), name="DROP")
 
     @staticmethod
     def dup():
@@ -70,7 +70,9 @@ class Compiler:
         )
 
     def find(self, word):
-        return Instruction(lambda state: state.fetch(word), name=f"FIND {word}")
+        return Instruction(
+            lambda state: state.fetch(word), name=f"FIND {word}", skippable=False
+        )
 
     # makers
     def quote(self, word):
