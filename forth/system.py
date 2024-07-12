@@ -3,8 +3,8 @@ from .runtime import Runtime
 
 
 class System:
-    def __init__(self):
-        self.state = Runtime()
+    def __init__(self, shell=None):
+        self.state = Runtime(shell)
         self.compiler = Compiler()
 
     def do_string(self, line):

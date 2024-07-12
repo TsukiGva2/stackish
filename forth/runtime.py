@@ -6,10 +6,11 @@ from .wordtable import WordTable
 
 
 class Runtime:
-    def __init__(self):
+    def __init__(self, shell=None):
         self.stack = deque([])
         self.state = INTERPRET
         self.words = WordTable()
+        self.shell = shell
 
     # operations
     def push(self, *args):
@@ -18,9 +19,7 @@ class Runtime:
         return args
 
     def drop(self):
-        self.stack.pop()
-
-        return 0
+        return self.stack.pop()
 
     def dup(self):
         n = self.stack.pop()
@@ -36,7 +35,11 @@ class Runtime:
 
     def fetch(self, w):
         instructions = self.words.find(w)
-        self.exec(instructions)
+
+        try:
+            self.eval(instructions)
+        except AttributeError:
+            self.exec(instructions)
 
         return w
 
@@ -45,11 +48,27 @@ class Runtime:
 
     def switch(self, s):
         if self.state == s:
-            raise Forth_EvaluationError("Unexpected state switch (double :/;)")
+            #raise Forth_EvaluationError("Unexpected state switch (double :/;)")
+            return
 
         self.state = s
 
         return s
+
+    # IO
+    def run_shell(self, command):
+        if self.shell is None:
+            # TODO @OVERSIGHT: Raise an Exception
+            return False
+
+        # TODO @IMPROVEMENT: Generalize the function
+        # TODO @WIP:
+        #   Implement PIPE/FILE OUTPUT Logic
+        command = self.shell.build_command(command)
+        self.shell.command = command
+        self.shell.eval()
+
+        return self.shell.status
 
     # functs
     def eval(self, instruction):

@@ -116,10 +116,6 @@ class WordHeader:
     state? 'SKIP = =>
 ;
 
-: else
-    pop() =>
-;
-
 EXAMPLE: ```
     '/bin/sh exists? '(file exists) =
     =>
@@ -136,24 +132,28 @@ EXAMPLE: ```
 # TODO: these commands need a PIPE
 
 """
-PROTO SHELL -> [TODO:shell.run()] as Run()
-SIGNATURE Run() -> CMD, STDIN=NONE
-
 : SHELL ( cmd pipe -- _Process )
     dup
 
-    pipe? => swap Run(2)
+    pipe? => swap 
     or Run(1)
     end
 ;
 """
 
 # ( _Process -- Int )
-# status -> waitProcess(): pop()
-# toFile -> processToFile(): pop()
+
+# TODO @OVERSIGHT @WIP:
+#   Processes are currently waited for in the Command() class.
+#   Create a way to run them and not wait() right away, so we can
+#   PIPE its output to a file or another Command()
+
+# -- NOTE: Wait is done automatically atm (see above)
+# status -> waitProcess(): process? pop()
+# toFile -> processToFile(): process? pop()
 
 # ? -> SHELL status
-## | -> SHELL @ do we even need this?
+## | -> SHELL -- NOTE: do we even need this?
 # '<-' -> SHELL toFile
 
 # -. -> pop()
@@ -183,7 +183,7 @@ class WordTable:
     def __init__(self):
         self.words = {
             # IO
-            # ".": StdFunctions.put(), # : . '(echo) ? ;
+            ".": StdFunctions.put(), # : . '(echo) ? ;
             "read": StdFunctions.ask(),
             # operators
             "+": StdFunctions.add(),
@@ -194,24 +194,29 @@ class WordTable:
             "~": StdFunctions.non(),
             # logic
             "=": StdFunctions.equals(),
-            "~=": StdFunctions.nequal(),
+            "~=": StdFunctions.nequals(),
             ">": StdFunctions.greater(),
             "<": StdFunctions.lesser(),
-            ">=": StdFunctions.geq(),
-            "<=": StdFunctions.leq(),
+            ">=": StdFunctions.greater_or_equals(),
+            "<=": StdFunctions.lesser_or_equals(),
             "=>": StdFunctions.implies(),
+            "or": StdFunctions.or_word(),
+            #"else": StdFunctions.else_word(), -- FIXME @WIP
             "end": StdFunctions.end(),
             # environment
             "$": StdFunctions.env(),
             "export": StdFunctions.setenv(),
             # Shell
-            "?": StdFunctions.shell(),
-            "|": StdFunctions.pipe(),
-            "<-": StdFunctions.tofile(),
-            # State
+            "?": StdFunctions.run_command(),
+            #"|": StdFunctions.pipe(), -- FIXME @WIP
+            #"<-": StdFunctions.tofile(), -- FIXME @WIP
+
+            # State -- TODO @DESIGN @WIP: Not really focused on state atm
             #"@": StdFunctions.fetchvar(),
             #"!": StdFunctions.definevar(),
+
             # Misc
+            # NOTE @DESIGN: That's kind of ugly
             "-.": StdFunctions.pop(),
         }
 

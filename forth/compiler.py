@@ -24,7 +24,7 @@ class Compiler:
         self.skip = False
 
         self.match_word = re.compile(
-            r"[?/A-Za-z!@#$%&*()\[\]^~'`\"\\+=-_.,><{}][?/A-Za-z0-9!@#$%&*()\[\]^~'`\"\\+=-_.,><{}]+"
+            r"[?/A-Za-z!@#$%&*()\[\]^~'`\"\\+=-_.,><{}][?/A-Za-z0-9!@#$%&*()\[\]^~'`\"\\+=-_.,><{}]*"
         )
 
     # utils
@@ -45,8 +45,8 @@ class Compiler:
         return Instruction(lambda state: state.push(n), name=f"PUSH {n}")
 
     @staticmethod
-    def drop(count):
-        return Instruction(lambda state: state.drop(count), name=f"DROP {count}")
+    def drop():
+        return Instruction(lambda state: state.drop(), name=f"DROP")
 
     @staticmethod
     def dup():

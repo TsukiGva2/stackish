@@ -1,10 +1,13 @@
 import forth.system as sf
+from stackish_shell import Shell
 
 
 def dostring(code):
-    s = sf.System()
-    print(s.do_string(code))
-    print(s.state.stack)
+    shell = Shell()
+    s = sf.System(shell=shell)
+
+    s.do_string(code)
+    #print(s.state.stack)
 
 
 def functions():
@@ -25,10 +28,20 @@ def functions():
     """
     )
 
-    print("Operations")
     dostring(
         """
-            : ping '(ping www.google.com) ? => . ;
+            : google
+                '(ping -c 1 www.google.com) ?
+                0 ~= =>
+                    '(error)
+                or
+                    '(success)
+                end
+                '(hey) . 12 3 45
+            ;
+
+            : wow 1 1 = => 'cool . end ;
+            0 0 = => wow end 1 .
         """
     )
 
