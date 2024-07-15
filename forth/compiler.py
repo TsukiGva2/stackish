@@ -1,43 +1,20 @@
-import re
-
 from .configuration import (
     COMPILE,
     DELIM_COLON_BEGIN,
     DELIM_COLON_END,
     DELIM_QUOTE_BEGIN,
-    DELIM_QUOTE_END,
     DELIM_SQUOTE_BEGIN,
-    INDEX_QUOTE_BEGIN,
-    INDEX_QUOTE_END,
-    INDEX_SQUOTE_BEGIN,
     INTERPRET,
 )
 from .errors import Forth_CompilationError
 from .instruction import Instruction
+from .tokenizer import Tokenizer
 
 
-class Compiler:
+class Compiler(Tokenizer):
     def __init__(self):
+        Tokenizer.__init__(self)
         self.symbols = set()
-        self.words = iter([])
-
-        self.skip = False
-
-        self.match_word = re.compile(
-            r"[?/A-Za-z!@#$%&*()\[\]^~'`\"\\+=-_.,><{}][?/A-Za-z0-9!@#$%&*()\[\]^~'`\"\\+=-_.,><{}]*"
-        )
-
-    # utils
-    def next(self):
-        try:
-            return next(self.words)
-        except StopIteration:
-            raise EOFError("Unexpected EOF.")  # TODO
-
-    def word(self, w):
-        if self.match_word.match(w):
-            return w
-        raise Forth_CompilationError(f"Invalid identifier '{w}")
 
     # operations
     @staticmethod
@@ -74,47 +51,19 @@ class Compiler:
             lambda state: state.fetch(word), name=f"FIND {word}", skippable=False
         )
 
-    # makers
-    def quote(self, word):
-        w = word[INDEX_QUOTE_BEGIN:]
-
-        if w.endswith(DELIM_QUOTE_END):
-            return self.push(w[:INDEX_QUOTE_END])
-
-        quote = [w]
-
-        while not (w := self.next()).endswith(DELIM_QUOTE_END):
-            quote.append(w)
-
-        quote.append(w[:INDEX_QUOTE_END])
-
-        result = " ".join(quote)
-        return self.push(result)
-
-    def simple_quote(self, word):
-        return self.push(word[INDEX_SQUOTE_BEGIN:])
-
-    def symbol(self, word):
-        w = self.word(word)
-
-        return self.find(w)
-
-    def number(self, num):
-        n = float(num)
-        return self.push(n)
+    def literal(self, value):
+        return self.push(value)
 
     def compile(self, words):
         self.words = iter(words)
 
         for w in self.words:
-            meaning = ...
-
             if w.startswith(DELIM_QUOTE_BEGIN):
-                yield self.quote(w)
+                yield self.literal(self.quote(w))
                 continue
 
             if w.startswith(DELIM_SQUOTE_BEGIN):
-                yield self.simple_quote(w)
+                yield self.literal(self.simple_quote(w))
                 continue
 
             if w == DELIM_COLON_BEGIN:
@@ -126,8 +75,10 @@ class Compiler:
                 continue
 
             try:
-                meaning = self.number(w)
+                yield self.literal(self.number(w))
+                continue
             except ValueError:
-                meaning = self.symbol(w)
+                yield self.find(self.symbol(w))
+                continue
 
-            yield meaning
+            raise Forth_CompilationError

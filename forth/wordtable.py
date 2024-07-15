@@ -1,4 +1,5 @@
 from .configuration import HEADER_EMPTY
+from .errors import Forth_NotFound
 from .std import StdFunctions
 
 
@@ -77,4 +78,7 @@ class WordTable:
         return instruction.name
 
     def find(self, w):
-        return self.words[w]
+        try:
+            return self.words[w]
+        except KeyError:
+            raise Forth_NotFound

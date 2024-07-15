@@ -1,8 +1,7 @@
+from .checker import CheckedExpr
 from .compiler import Compiler
+from .errors import Forth_InvalidExpr
 from .runtime import Runtime
-
-
-class Forth_NotFound(Exception): ...
 
 
 class System:
@@ -10,7 +9,15 @@ class System:
         self.state = Runtime(shell)
         self.compiler = Compiler()
 
-        self.NotFound = Forth_NotFound
+        self.checkedexpr = None
+
+        self.InvalidExpr = Forth_InvalidExpr
+
+    def command(self, command):
+        self.checkedexpr = CheckedExpr(command, self.state)
+
+    def execute(self):
+        return self.state.exec(self.checkedexpr.compile())
 
     def do_string(self, line):
         if line == "":

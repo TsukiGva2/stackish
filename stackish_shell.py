@@ -52,9 +52,14 @@ class Shell(ConditionalREPL):
             return Command(line)
 
         try:
-            return self.commander.run(line)
-        except self.commander.NotFound:
+            compiled = self.commander.compile(line)
+        except self.commander.InvalidExpr:
             return Command(line)
+
+        if self.commander.check(compiled):
+            return compiled
+
+        return Command(line)
 
     def set_commander(self, commander):
         self.commander = commander
