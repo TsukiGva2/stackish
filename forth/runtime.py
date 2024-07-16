@@ -1,5 +1,7 @@
 from collections import deque
 
+from stackish_command import Command
+
 from .configuration import INTERPRET
 
 # from .errors import Forth_EvaluationError
@@ -11,7 +13,6 @@ class Runtime:
         self.stack = deque([])
         self.state = INTERPRET
         self.words = WordTable()
-        self.shell = shell
 
     # operations
     def push(self, *args):
@@ -27,6 +28,10 @@ class Runtime:
         self.push(n, n)
 
         return n
+
+    def swap(self):
+        self.stack.rotate(1)
+        return 1
 
     def header(self, w):
         return self.words.new(w)
@@ -58,18 +63,11 @@ class Runtime:
 
     # IO
     def run_shell(self, command):
-        if self.shell is None:
-            # TODO @OVERSIGHT: Raise an Exception
-            return False
-
         # TODO @IMPROVEMENT: Generalize the function
         # TODO @WIP:
         #   Implement PIPE/FILE OUTPUT Logic
-        command = self.shell.build_command(command)
-        self.shell.command = command
-        self.shell.eval()
-
-        return self.shell.status
+        c = Command(command)
+        return c.execute()
 
     # functs
     def eval(self, instruction):

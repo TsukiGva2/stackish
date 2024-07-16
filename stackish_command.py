@@ -13,19 +13,25 @@ class Command:
 
         self.process: subprocess.Popen = None
 
-    def execute(self) -> int:
+    def execute(self):
+        return self.run_command(self.cmdline)
+
+    def run_command(self, command, **kwargs) -> int:
+        process = self.spawn(command, **kwargs)
+
+        if not process:
+            return 1
+
+        return process.wait()
+
+    def spawn(self, command, **kwargs) -> subprocess.Popen:
         """
-        Run command and return the status code
+        Run command
         """
-        if self.cmdline == "":
+        if command == "":
             raise ValueError("Can't run empty command")
 
         try:
-            self.process = subprocess.Popen(
-                self.args,
-                # stderr = subprocess.PIPE
-            )
+            return subprocess.Popen(self.args, **kwargs)
         except FileNotFoundError:
             raise CommandNotFound("Command not found")
-
-        return self.process.wait()

@@ -55,7 +55,7 @@ class Compiler(Tokenizer):
         return self.push(value)
 
     def compile(self, words):
-        self.words = iter(words)
+        self.words = iter(words.split())
 
         for w in self.words:
             if w.startswith(DELIM_QUOTE_BEGIN):

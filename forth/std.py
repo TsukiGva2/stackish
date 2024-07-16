@@ -42,6 +42,10 @@ class StdFunctions:
     def non():
         return Instruction(lambda state: state.push(not state.drop()))
 
+    @staticmethod
+    def swap():
+        return Instruction(lambda state: state.swap())
+
     # logic
     @staticmethod
     def equals():

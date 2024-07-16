@@ -1,23 +1,19 @@
-from .checker import CheckedExpr
 from .compiler import Compiler
 from .errors import Forth_InvalidExpr
 from .runtime import Runtime
 
 
 class System:
-    def __init__(self, shell=None):
-        self.state = Runtime(shell)
-        self.compiler = Compiler()
+    def __init__(self):
+        self.state = Runtime()
 
-        self.checkedexpr = None
+        self.compiler = Compiler()
+        self.compile = self.compiler.compile
 
         self.InvalidExpr = Forth_InvalidExpr
 
-    def command(self, command):
-        self.checkedexpr = CheckedExpr(command, self.state)
-
-    def execute(self):
-        return self.state.exec(self.checkedexpr.compile())
+    def execute(self, instructions):
+        return self.state.exec(instructions)
 
     def do_string(self, line):
         if line == "":

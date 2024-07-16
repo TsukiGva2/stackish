@@ -34,7 +34,7 @@ class Tokenizer:
         w = word[INDEX_QUOTE_BEGIN:]
 
         if w.endswith(DELIM_QUOTE_END):
-            return self.push(w[:INDEX_QUOTE_END])
+            return w[:INDEX_QUOTE_END]
 
         quote = [w]
 
@@ -44,6 +44,7 @@ class Tokenizer:
         quote.append(w[:INDEX_QUOTE_END])
 
         result = " ".join(quote)
+
         return result
 
     def simple_quote(self, word):

@@ -55,6 +55,7 @@ class WordTable:
             # "!": StdFunctions.definevar(),
             # Misc
             # NOTE @DESIGN: That's kind of ugly
+            "swap": StdFunctions.swap(),
             "-.": StdFunctions.pop(),
         }
 
