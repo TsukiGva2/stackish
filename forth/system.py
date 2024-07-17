@@ -1,5 +1,4 @@
 from .compiler import Compiler
-from .errors import Forth_InvalidExpr
 from .runtime import Runtime
 
 
@@ -9,8 +8,6 @@ class System:
 
         self.compiler = Compiler()
         self.compile = self.compiler.compile
-
-        self.InvalidExpr = Forth_InvalidExpr
 
     def execute(self, instructions):
         return self.state.exec(instructions)
