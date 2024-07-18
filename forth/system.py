@@ -20,7 +20,3 @@ class System:
 
         compiled = self.compiler.compile(line)
         return self.state.exec(compiled)
-
-    def script(self, line):
-        compiled = self.compiler.compile(line)
-        return self.state.exec(compiled)

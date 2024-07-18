@@ -3,6 +3,7 @@ from collections import deque
 from stackish_command import Command
 
 from .configuration import INTERPRET
+from .errors import Forth_NotFound, Forth_NoWord
 
 # from .errors import Forth_EvaluationError
 from .wordtable import WordTable
@@ -13,6 +14,8 @@ class Runtime:
         self.stack = deque([])
         self.state = INTERPRET
         self.words = WordTable()
+
+        self.dead_words = deque([])  # undefined words
 
     # operations
     def push(self, *args):
@@ -33,14 +36,27 @@ class Runtime:
         self.stack.rotate(1)
         return 1
 
-    def header(self, w):
-        return self.words.new(w)
+    def get_word(self):
+        try:
+            return self.dead_words.pop()
+        except IndexError:
+            raise Forth_NoWord()
+
+    def open_header(self):
+        return self.words.new()
+
+    def set_header_word(self, w):
+        return self.words.set_header_word(w)
 
     def close_header(self):
         return self.words.end()
 
     def fetch(self, w):
-        instructions = self.words.find(w)
+        try:
+            instructions = self.words.find(w)
+        except Forth_NotFound:
+            self.dead_words.append(w)
+            return w
 
         try:
             self.eval(instructions)
@@ -74,4 +90,9 @@ class Runtime:
         return instruction.run(self)
 
     def exec(self, instructions):
-        return [self.eval(i) for i in instructions]
+        results = [self.eval(i) for i in instructions]
+
+        if self.dead_words:
+            raise Forth_NotFound(f"Undefined words: '{self.dead_words}'")
+
+        return results

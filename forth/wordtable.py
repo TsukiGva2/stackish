@@ -1,5 +1,5 @@
 from .configuration import HEADER_EMPTY
-from .errors import Forth_NotFound
+from .errors import Forth_HeaderRedefinitionError, Forth_NotFound
 from .std import StdFunctions
 
 
@@ -7,6 +7,14 @@ class WordHeader:
     def __init__(self, header=HEADER_EMPTY):
         self.header = header
         self.instructions = []
+
+    def set_word(self, w):
+        if self.header != HEADER_EMPTY:
+            raise Forth_HeaderRedefinitionError(
+                f"Trying to change unclosed WordHeader name: '{self.header}' -> {w}"
+            )
+
+        self.header = w
 
     def pack(self):
         return {self.header: self.instructions}
@@ -43,6 +51,8 @@ class WordTable:
             "or": StdFunctions.or_word(),
             # "else": StdFunctions.else_word(), -- FIXME @WIP
             "end": StdFunctions.end(),
+            ":": StdFunctions.colon(),
+            ";": StdFunctions.endcolon(),
             # environment
             "$": StdFunctions.env(),
             "export": StdFunctions.setenv(),
@@ -61,8 +71,12 @@ class WordTable:
 
         self.header = WordHeader()
 
-    def new(self, w):
+    def new(self, w=HEADER_EMPTY):
         self.header = WordHeader(w)
+        return w
+
+    def set_header_word(self, w):
+        self.header.set_word(w)
         return w
 
     def end(self):
@@ -82,4 +96,4 @@ class WordTable:
         try:
             return self.words[w]
         except KeyError:
-            raise Forth_NotFound
+            raise Forth_NotFound(f"Undefined word {w}")

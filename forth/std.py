@@ -1,5 +1,5 @@
 # from .compiler import Compiler
-from .configuration import INTERPRET, SKIP
+from .configuration import COMPILE, INTERPRET, SKIP
 from .instruction import Instruction
 
 
@@ -90,7 +90,7 @@ class StdFunctions:
             lambda state: state.push(state.state == SKIP),
             # =>
             *StdFunctions.implies().operations,
-            skippable=False  # cant skip an or
+            skippable=False,  # cant skip an or
             # otherwise it could
             # not reset the skipping
             # it kinda serves as
@@ -114,6 +114,23 @@ class StdFunctions:
             skippable=False,  # Can't skip an end
             # otherwise the skipping
             # would never... end
+        )
+
+    @staticmethod
+    def colon():
+        return Instruction(
+            lambda state: state.switch(COMPILE),
+            lambda state: state.open_header(),
+            compiled=False,
+        )
+
+    @staticmethod
+    def endcolon():
+        return Instruction(
+            lambda state: state.switch(INTERPRET),
+            lambda state: state.set_header_word(state.get_word()),  # fetch a dead word
+            lambda state: state.close_header(),
+            compiled=False,
         )
 
     # environment

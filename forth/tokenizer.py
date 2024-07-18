@@ -14,20 +14,21 @@ class Tokenizer:
         self.words = iter([])
         self.skip = False
         self.match_word = re.compile(
-            r"[?/A-Za-z!@#$%&*()\[\]^~'`\"\\+=-_.,><{}][?/A-Za-z0-9!@#$%&*()\[\]^~'`\"\\+=-_.,><{}]*"
+            r"[?/A-Za-z!@#$%&*()\[\]^~'`\"\\+=-_.,><{}:;][?/A-Za-z0-9!@#$%&*()\[\]^~'`\"\\+=-_.,><{}:;]*"
         )
 
     # utils
-    def next(self):
+    def next(self, caller):
         try:
             return next(self.words)
         except StopIteration:
-            raise EOFError("Unexpected EOF.")  # TODO
+            raise EOFError(f"Unexpected EOF in definition for '{caller}'.")  # TODO
 
     def word(self, w):
         if self.match_word.match(w):
             return w
-        raise Forth_CompilationError(f"Invalid identifier '{w}")
+
+        raise Forth_CompilationError(f"Invalid identifier '{w}'")
 
     # makers
     def quote(self, word):
@@ -38,7 +39,7 @@ class Tokenizer:
 
         quote = [w]
 
-        while not (w := self.next()).endswith(DELIM_QUOTE_END):
+        while not (w := self.next("Quote")).endswith(DELIM_QUOTE_END):
             quote.append(w)
 
         quote.append(w[:INDEX_QUOTE_END])
@@ -50,11 +51,9 @@ class Tokenizer:
     def simple_quote(self, word):
         return word[INDEX_SQUOTE_BEGIN:]
 
-    def symbol(self, word):
-        w = self.word(word)
-
-        return w
+    def symbol(self, w):
+        return self.word(w)
 
     def number(self, num):
-        n = float(num)
+        n = float(num)  # TODO @DESIGN @OPTIMIZATION: separate int/float types
         return n

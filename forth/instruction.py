@@ -29,7 +29,7 @@ class Instruction:
     #   redefine run if compilable so it skips the check
     def run(self, state):
         # neat statement for debug -- TODO @IMPROVEMENT: Improve debugging (logging etc)
-        # print(f"{self.name:>10} : {self.skippable} \t| {state.state}")
+        # print(f"{self.name:>10} : {self.skippable} \t| {state.state}\t|N:SKIP:STATE")
 
         if self.skippable and state.state == SKIP:
             return []
