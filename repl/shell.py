@@ -1,6 +1,6 @@
 from typing import final, override
 
-from stackish_input import ReadLine
+from .input import ReadLine
 
 
 class ConditionalREPL:

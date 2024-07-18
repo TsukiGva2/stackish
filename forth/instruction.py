@@ -1,4 +1,30 @@
+from collections import namedtuple
+
 from .configuration import COMPILE, SKIP
+
+InstructionStatus = namedtuple(
+    "InstructionStatus", ["SKIPPED", "INTERPRETED", "COMPILED"]
+)
+
+
+def get_instruction_status(status):
+    match status:
+        case InstructionStatus.SKIPPED:
+            return "SKIPPED"
+        case InstructionStatus.INTERPRETED:
+            return "INTERPRETED"
+        case InstructionStatus.COMPILED:
+            return "COMPILED"
+        case _:
+            raise KeyError("No such status!")
+
+
+class InstructionReport:
+    def __init__(self, name, status, data):
+        self.name = name
+        self.data = data
+        self.status = status
+
 
 # This code is really messy and not really well organized
 # speed right now is the biggest problem, since the "algorithm"
@@ -23,6 +49,21 @@ class Instruction:
         except KeyError:
             self.skippable = True
 
+    def skip(self):
+        return InstructionReport(self.name, InstructionStatus.SKIPPED, [])
+
+    def interpret(self, state):
+        return InstructionReport(
+            self.name,
+            InstructionStatus.INTERPRETED,
+            [op(state) for op in self.operations],
+        )
+
+    def compile(self, state):
+        return InstructionReport(
+            self.name, InstructionStatus.COMPILED, state.insert(self)
+        )
+
         # print(f"generated: {name}")
 
     # TODO @OPTIMIZE:
@@ -32,7 +73,7 @@ class Instruction:
         # print(f"{self.name:>10} : {self.skippable} \t| {state.state}\t|N:SKIP:STATE")
 
         if self.skippable and state.state == SKIP:
-            return []
+            return self.skip()
 
         # FIXME @OVERSIGHT:
         # STATE CANT BE BOTH SKIP AND INTERPRET/COMPILE
@@ -56,6 +97,6 @@ class Instruction:
         # code is still XXX though
 
         if not self.compilable or state.state != COMPILE:
-            return [op(state) for op in self.operations]
+            return self.interpret(state)
 
-        return state.insert(self)
+        return self.compile(state)

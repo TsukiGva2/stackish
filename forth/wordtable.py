@@ -48,11 +48,13 @@ class WordTable:
             ">=": StdFunctions.greater_or_equals(),
             "<=": StdFunctions.lesser_or_equals(),
             "=>": StdFunctions.implies(),
+            "implies": StdFunctions.implies(),  # NOTE: alias
             "or": StdFunctions.or_word(),
             # "else": StdFunctions.else_word(), -- FIXME @WIP
             "end": StdFunctions.end(),
             ":": StdFunctions.colon(),
             ";": StdFunctions.endcolon(),
+            "words": StdFunctions.words(),
             # environment
             "$": StdFunctions.env(),
             "export": StdFunctions.setenv(),

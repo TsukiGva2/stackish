@@ -16,7 +16,7 @@ class System:
         if line == "":
             return "OK"
 
-        line = line.split()
+        # line = line.split()
 
         compiled = self.compiler.compile(line)
         return self.state.exec(compiled)
