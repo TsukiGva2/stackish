@@ -1,6 +1,7 @@
 from collections import namedtuple
 
 from .configuration import COMPILE
+from .errors import Forth_EvaluationError
 
 InstructionStatus = namedtuple("InstructionStatus", ["INTERPRETED", "COMPILED"])
 
@@ -20,12 +21,6 @@ class InstructionReport:
         self.name = name
         self.data = data
         self.status = status
-
-
-# alternate dummy instruction type
-class Word:
-    def __init__(self, word):
-        self.token = word
 
 
 # This code is really messy and not really well organized
@@ -93,3 +88,12 @@ class Instruction:
             return self.interpret(state)
 
         return self.compile(state)
+
+
+# alternate dummy instruction type
+class Word(Instruction):
+    def __init__(self, word):
+        self.token = word
+
+    def run(self, state):
+        raise Forth_EvaluationError("Trying to run Word type! (use FIND)")

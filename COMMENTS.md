@@ -6,12 +6,14 @@ write-up for me to keep track of my schizophrenic
 comments.
 ---
 
-## TODO
+## COMMENT TYPES
 
-To-Do's (wow).
-But it doesn't stop there!
+- FIXME -> To be fixed, WIP
+- TODO  -> To be done, important stuff
+- NOTE  -> General comments, thoughts, ideas, etc
+- XXX   -> Hacks, suboptimal approaches, unreadable monsters, etc
 
-### TODO ATTRIBUTES
+### CUSTOM COMMENT ATTRIBUTES
 ---
 
 - @IMPROVEMENT  -> Improvement to the code, readability/modularity

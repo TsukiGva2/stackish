@@ -41,8 +41,8 @@ class Runtime:
         return 1
 
     # TODO @IMPROVEMENT: Look for an implementation closer to DOCOL
-    def find(self, w):
-        entry = self.words.find(w)
+    def find(self, word):
+        entry = self.words.find(word)
         return entry
 
     def immediate_find(self, w):
@@ -85,7 +85,7 @@ class Runtime:
     def simple_eval(self, instruction):
         return instruction.run(self)
 
-    def expecting(self, instruction):
+    def expect(self, instruction):
         assert isinstance(instruction, self.expecting)
 
         if self.expecting == Word:
@@ -95,7 +95,7 @@ class Runtime:
 
         raise Forth_NotImplemented("Can't expect a non-word value")
 
-    # TODO @WIP XXX: this 'expected_type' logic reveals a
+    # TODO @WIP XXX @OVERSIGHT: this 'expected_type' logic reveals a
     # larger issue with this implementation, hinting that
     # possibly the compiler and runtime are not well integrated,
     # forcing it to emulate getting a WORD from 'input', for example
@@ -103,11 +103,11 @@ class Runtime:
         if self.expecting is not None:
             return self.expect(instruction)
 
-        if isinstance(instruction, Instruction):
-            return instruction.run(self)
-
         if isinstance(instruction, Word):
             return self.eval(self.find(instruction.token))
+
+        if isinstance(instruction, Instruction):
+            return instruction.run(self)
 
         raise Forth_EvaluationError(f"Undefined type: {type(instruction)}")
 

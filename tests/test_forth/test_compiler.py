@@ -1,4 +1,5 @@
 from forth.compiler import Compiler
+from forth.instruction import Word
 
 
 def test_compiler_literals():
@@ -12,14 +13,12 @@ def test_compiler_literals():
         assert i.name == "literal"
 
 
-def test_compiler_find():
+def test_compiler_words():
     compiler = Compiler()
 
-    compileTest = "foo 'literal"
-
-    expected_instructions = ["find", "literal"]
+    compileTest = "foo bar"
 
     instructions = compiler.compile(compileTest)
 
-    for instruction, expected in zip(instructions, expected_instructions):
-        assert instruction.name == expected
+    for i in instructions:
+        assert isinstance(i, Word)

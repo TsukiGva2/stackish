@@ -1,4 +1,7 @@
-# Usable example
+# Unreadable mess, avoid DOCUMENTATION.md for now (check CHANGELOG.md for info)
+# This entire document is a @WIP, marking it as a TODO
+
+## Usable example
 
 ```
     # (filename -- msg)     # specifying arguments (optional but recommended)

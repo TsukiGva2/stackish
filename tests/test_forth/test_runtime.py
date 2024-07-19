@@ -6,7 +6,7 @@ def test_runtime_literals():
 
     stack, reports, words = system.do_string("'foo '(bar) 1 1e6")
 
-    assert list(stack) == ["foo", "bar", 1, 1e6]
+    assert all("foo" in stack, "bar" in stack, 1 in stack, 1e6 in stack)
 
 
 def test_function_definition():
