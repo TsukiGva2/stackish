@@ -13,6 +13,10 @@ for the following reasons:
 - It's not designed around cells (no size/memory constraints)
 - It's not designed to be fast (optimization is not the main focus right now)
 
+Although i intend to keep my implementation closer to standard forth
+in the future. But for this i need to get a deeper understanding, which
+i'm still developing.
+
 ## Objectives/Vision
 
 The language is designed to integrate with the shell environment

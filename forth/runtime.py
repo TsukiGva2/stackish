@@ -3,17 +3,23 @@ from collections import deque
 from repl.command import Command
 
 from .configuration import INTERPRET
-from .instruction import get_instruction_status
+from .errors import Forth_EvaluationError, Forth_NotImplemented
+from .instruction import Instruction, Word, get_instruction_status
+from .std.builtin import BuiltinFunctions
+from .words import Words
 
-# from .errors import Forth_EvaluationError
-from .wordtable import WordTable
 
-
+# TODO NOTE @DESIGN
+# My implementation is kind of very far away from the
+# simplicity of NEXT, this is unintentional and a @WIP
+# still looking into simplifying things!
 class Runtime:
     def __init__(self, shell=None):
         self.stack = deque([])
         self.state = INTERPRET
-        self.words = WordTable()
+        self.words = Words()
+
+        self.expecting = None
 
     # operations
     def push(self, *args):
@@ -34,26 +40,24 @@ class Runtime:
         self.stack.rotate(1)
         return 1
 
-    def get_word(self): ...  # TODO @WIP @DESIGN
-
-    def open_header(self):
-        return self.words.new()
-
-    def set_header_word(self, w):
-        return self.words.set_header_word(w)
-
-    def close_header(self):
-        return self.words.end()
-
-    def word_table(self):
-        return " ".join(self.words.words.keys())
-
+    # TODO @IMPROVEMENT: Look for an implementation closer to DOCOL
     def find(self, w):
         entry = self.words.find(w)
+        return entry
 
+    def immediate_find(self, w):
+        entry = self.words.find(w)
+
+        entry.compilable = False  # run immediately
         self.eval(entry)
 
         return w
+
+    # XXX: workaround for getting a word from compilation
+    # stream
+    def word(self):
+        self.expecting = Word
+        return "word"
 
     def insert(self, w):
         return self.words.insert(w)
@@ -68,6 +72,7 @@ class Runtime:
         return s
 
     # IO
+
     def run_shell(self, command):
         # TODO @IMPROVEMENT: Generalize the function
         # TODO @WIP:
@@ -75,9 +80,36 @@ class Runtime:
         c = Command(command)
         return c.execute()
 
-    # functs
-    def eval(self, instruction):
+    # evaluation
+
+    def simple_eval(self, instruction):
         return instruction.run(self)
+
+    def expecting(self, instruction):
+        assert isinstance(instruction, self.expecting)
+
+        if self.expecting == Word:
+            self.expecting = None
+
+            return self.simple_eval(BuiltinFunctions.literal(instruction.token))
+
+        raise Forth_NotImplemented("Can't expect a non-word value")
+
+    # TODO @WIP XXX: this 'expected_type' logic reveals a
+    # larger issue with this implementation, hinting that
+    # possibly the compiler and runtime are not well integrated,
+    # forcing it to emulate getting a WORD from 'input', for example
+    def eval(self, instruction):
+        if self.expecting is not None:
+            return self.expect(instruction)
+
+        if isinstance(instruction, Instruction):
+            return instruction.run(self)
+
+        if isinstance(instruction, Word):
+            return self.eval(self.find(instruction.token))
+
+        raise Forth_EvaluationError(f"Undefined type: {type(instruction)}")
 
     def exec(self, instructions):
         evaluated = (self.eval(i) for i in instructions)
@@ -86,4 +118,4 @@ class Runtime:
             (report.name, get_instruction_status(report.status)) for report in evaluated
         ]
 
-        return (self.stack, results)
+        return (self.stack, results, self.words.list())

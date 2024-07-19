@@ -1,16 +1,12 @@
 from collections import namedtuple
 
-from .configuration import COMPILE, SKIP
+from .configuration import COMPILE
 
-InstructionStatus = namedtuple(
-    "InstructionStatus", ["SKIPPED", "INTERPRETED", "COMPILED"]
-)
+InstructionStatus = namedtuple("InstructionStatus", ["INTERPRETED", "COMPILED"])
 
 
 def get_instruction_status(status):
     match status:
-        case InstructionStatus.SKIPPED:
-            return "SKIPPED"
         case InstructionStatus.INTERPRETED:
             return "INTERPRETED"
         case InstructionStatus.COMPILED:
@@ -26,6 +22,12 @@ class InstructionReport:
         self.status = status
 
 
+# alternate dummy instruction type
+class Word:
+    def __init__(self, word):
+        self.token = word
+
+
 # This code is really messy and not really well organized
 # speed right now is the biggest problem, since the "algorithm"
 # is simply a (RUN ALL IN LIST OF LAMBDAS) thing
@@ -37,20 +39,12 @@ class Instruction:
     def __init__(self, *operations, name="_", **flags):
         self.operations = operations
 
-        self.name = name
+        self.name = name.upper()
 
         try:
             self.compilable = flags["compiled"]
         except KeyError:
             self.compilable = True
-
-        try:
-            self.skippable = flags["skippable"]
-        except KeyError:
-            self.skippable = True
-
-    def skip(self):
-        return InstructionReport(self.name, InstructionStatus.SKIPPED, [])
 
     def interpret(self, state):
         return InstructionReport(
@@ -70,10 +64,7 @@ class Instruction:
     #   redefine run if compilable so it skips the check
     def run(self, state):
         # neat statement for debug -- TODO @IMPROVEMENT: Improve debugging (logging etc)
-        # print(f"{self.name:>10} : {self.skippable} \t| {state.state}\t|N:SKIP:STATE")
-
-        if self.skippable and state.state == SKIP:
-            return self.skip()
+        print(f"\t{self.name:<10} \t| {state.state} \t|Name | State")
 
         # FIXME @OVERSIGHT:
         # STATE CANT BE BOTH SKIP AND INTERPRET/COMPILE
@@ -95,6 +86,8 @@ class Instruction:
         # have special cases that must be ran (e.g. END, OR)
         # so restricting to only INTERPRET was a bad idea, this
         # code is still XXX though
+
+        # 18/07/24 - Deleted SKIP
 
         if not self.compilable or state.state != COMPILE:
             return self.interpret(state)

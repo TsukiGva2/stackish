@@ -1,13 +1,12 @@
 # from .compiler import Compiler
-from .configuration import COMPILE, INTERPRET, SKIP
-from .instruction import Instruction
+from forth.configuration import COMPILE, INTERPRET
+from forth.instruction import Instruction
 
 
-class StdFunctions:
+class PreludeFunctions:
     # IO -- FIXME @DESIGN: Implement both at state.io
 
-    # both are XXX
-    # TODO @DESIGN @WIP: to Print or to Echo? that is the question
+    # both PUT/READ are XXX
     @staticmethod
     def put():
         return Instruction(lambda state: print(state.drop()), name="put")
@@ -56,6 +55,10 @@ class StdFunctions:
     def swap():
         return Instruction(lambda state: state.swap(), name="swap")
 
+    @staticmethod
+    def dup():
+        return Instruction(lambda state: state.dup(), name="dup")
+
     # logic
     @staticmethod
     def equals():
@@ -95,53 +98,60 @@ class StdFunctions:
             name="lesser_or_equals",
         )
 
-    # logic_special
-    @staticmethod
-    def implies():
-        return Instruction(
-            lambda state: (state.switch(INTERPRET if state.drop() else SKIP)),
-            name="implies",
-        )
+    # FIXME @WIP:
+    #    # logic_special
+    #    @staticmethod
+    #    def implies():
+    #        return Instruction(
+    #            lambda state: (state.switch(INTERPRET if state.drop() else SKIP)),
+    #            name="implies",
+    #        )
 
-    @staticmethod
-    def or_word():
-        """
-        : OR
-            _state? 'SKIP = =>
-        ;
-        """
-        return Instruction(
-            # _state? =
-            lambda state: state.push(state.state == SKIP),
-            # =>
-            *StdFunctions.implies().operations,
-            skippable=False,  # cant skip an or
-            # otherwise it could
-            # not reset the skipping
-            # it kinda serves as
-            # an alternate end
-            # which doubles down
-            # as a surprise IMPLIES(=>)
-            name="or"
-        )
+    #    @staticmethod
+    #    def or_word():
+    #        """
+    #        : OR
+    #            _state? 'SKIP = =>
+    #        ;
+    #        """
+    #        return Instruction(
+    #            # _state? =
+    #            lambda state: state.push(state.state == SKIP),
+    #            # =>
+    #            *PreludeFunctions.implies().operations,
+    #            skippable=False,  # cant skip an or
+    #            # otherwise it could
+    #            # not reset the skipping
+    #            # it kinda serves as
+    #            # an alternate end
+    #            # which doubles down
+    #            # as a surprise IMPLIES(=>)
+    #            name="or"
+    #        )
 
-    @staticmethod
-    def end():
-        return Instruction(
-            # NOTE:
-            # This doesnt interfere with the COMPILE
-            # state at all because of the magic of
-            # Instruction flags, the COMPILED flag
-            # is set on all instructions by default
-            # and an Instruction with the COMPILED
-            # flag will not evaluate if the state is
-            # set to COMPILED.
-            lambda state: state.switch(INTERPRET),
-            skippable=False,  # Can't skip an end
-            # otherwise the skipping
-            # would never... end
-            name="end",
-        )
+    #    @staticmethod
+    #    def end():
+    #        return Instruction(
+    #            # NOTE:
+    #            # This doesnt interfere with the COMPILE
+    #            # state at all because of the magic of
+    #            # Instruction flags, the COMPILED flag
+    #            # is set on all instructions by default
+    #            # and an Instruction with the COMPILED
+    #            # flag will not evaluate if the state is
+    #            # set to COMPILED.
+    #            lambda state: state.switch(INTERPRET),
+    #            skippable=False,  # Can't skip an end
+    #            # otherwise the skipping
+    #            # would never... end
+    #            name="end",
+    #        )
+
+    # TODO @WIP:
+    """
+    CREATE :
+    DOES>
+        WORD
 
     @staticmethod
     def colon():
@@ -156,15 +166,30 @@ class StdFunctions:
     def endcolon():
         return Instruction(
             lambda state: state.switch(INTERPRET),
-            # lambda state: state.set_header_word(state.get_word()),  # fetch a dead word
             lambda state: state.close_header(),
             compiled=False,
             name="end_word_def",
         )
+    """
+
+    @staticmethod
+    def compile():
+        return Instruction(
+            lambda state: state.switch(COMPILE),
+            name="compile",
+        )
+
+    @staticmethod
+    def interpret():
+        return Instruction(lambda state: state.switch(INTERPRET), name="interpret")
 
     @staticmethod
     def words():
         return Instruction(lambda state: print(state.word_table()), name="words")
+
+    @staticmethod
+    def word():
+        return Instruction(lambda state: state.word(), name="word")
 
     # environment
     # TODO @WIP: Use shell system to get and set env
@@ -196,9 +221,3 @@ class StdFunctions:
     @staticmethod
     def pop():
         return Instruction(lambda state: state.drop(), name="pop")
-
-    # compiler
-
-    @staticmethod
-    def literal(n):
-        return Instruction(lambda state: state.push(n), name="literal")

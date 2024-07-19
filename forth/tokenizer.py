@@ -24,7 +24,7 @@ class Tokenizer:
         except StopIteration:
             raise EOFError(f"Unexpected EOF in definition for '{caller}'.")  # TODO
 
-    def word(self, w):
+    def isword(self, w):
         if self.match_word.match(w):
             return w
 
@@ -50,9 +50,6 @@ class Tokenizer:
 
     def simple_quote(self, word):
         return word[INDEX_SQUOTE_BEGIN:]
-
-    def symbol(self, w):
-        return self.word(w)
 
     def number(self, num):
         n = float(num)  # TODO @DESIGN @OPTIMIZATION: separate int/float types

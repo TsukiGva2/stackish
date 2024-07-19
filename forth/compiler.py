@@ -1,7 +1,6 @@
 from .configuration import DELIM_QUOTE_BEGIN, DELIM_SQUOTE_BEGIN
 from .errors import Forth_CompilationError
-from .instruction import Instruction
-from .std import StdFunctions
+from .std.builtin import BuiltinFunctions
 from .tokenizer import Tokenizer
 
 
@@ -11,16 +10,16 @@ class Compiler(Tokenizer):
         self.symbols = set()
 
     def find(self, word):
-        return Instruction(
-            lambda state: state.find(word), skippable=False, compiled=False, name="find"
-        )
+        return BuiltinFunctions.find(word)
 
     def create(self):
-        w = self.next()
-        return Instruction(lambda state: state.header_set_word(w))
+        return BuiltinFunctions.create(self)
 
     def literal(self, value):
-        return StdFunctions.literal(value)
+        return BuiltinFunctions.literal(value)
+
+    def word(self, word):
+        return BuiltinFunctions.word(word)
 
     def compile(self, words):
         self.words = iter(words.split())
@@ -38,7 +37,7 @@ class Compiler(Tokenizer):
                 yield self.literal(self.number(w))
                 continue
             except ValueError:
-                yield self.find(self.symbol(w))
+                yield self.word(self.isword(w))
                 continue
 
             raise Forth_CompilationError
