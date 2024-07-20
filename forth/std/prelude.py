@@ -175,18 +175,20 @@ class PreludeFunctions:
     @staticmethod
     def compile():
         return Instruction(
-            lambda state: state.switch(COMPILE),
-            name="compile",
+            lambda state: state.switch(COMPILE), name="compile", compiled=False
         )
 
     @staticmethod
     def interpret():
-        return Instruction(lambda state: state.switch(INTERPRET), name="interpret")
+        return Instruction(
+            lambda state: state.switch(INTERPRET), name="interpret", compiled=False
+        )
 
     @staticmethod
     def words():
         return Instruction(lambda state: print(state.word_table()), name="words")
 
+    # Get a word from input
     @staticmethod
     def word():
         return Instruction(lambda state: state.word(), name="word")
@@ -211,59 +213,38 @@ class PreludeFunctions:
         )
 
     @staticmethod
-    def does():
-        return PreludeFunctions.word()
-
-    # TODO @OPTIMIZATION @WIP: Rethink this whole thing
-    @staticmethod
-    def execution_token():
-        """
-        ['] - get the 'execution token' of the following word
-
-        This just emulates the functionality, not really efficient
-        """
-        return PreludeFunctions.word() + Instruction(
-            lambda state: state.push(state.find(state.drop()))
-        )
-
-    @staticmethod
     def immediate():
         return Instruction(
             lambda state: state.immediate(), name="immediate", compiled=False
         )
 
     @staticmethod
-    def compileto():
-        return Instruction(lambda state: state.insert(state.drop()), name="compile")
-
-    @staticmethod
-    def here():
-        return Instruction(lambda state: state.push(state.words.header))
-
-    @staticmethod
-    def return_stack_push():
-        return Instruction(lambda state: state)
-
-    @staticmethod
     def colon():
         """
         DEFINE :
-            CREATE  \\ start definition using WORD
-            here    \\ current defining word (wordHeader)
-
-            >r
-
-            immediate
-
-            ['] EXIT , \\ compile EXIT to new word
-
-            r>
-
-            DOES>
-                @ execute
+            CREATE
+            COMPILE
         END
         """
-        return PreludeFunctions.create() + PreludeFunctions.here()
+        return PreludeFunctions.create() + PreludeFunctions.compile()
+
+    @staticmethod
+    def semicolon():
+        """
+        DEFINE ;
+            INTERPRET
+        END
+        """
+        return PreludeFunctions.create() + PreludeFunctions.interpret()
+
+    @staticmethod
+    def branch():
+        """
+        : IF
+            WORD
+        ;
+        """
+        return Instruction()
 
     # environment
     # TODO @WIP: Use shell system to get and set env
@@ -295,3 +276,7 @@ class PreludeFunctions:
     @staticmethod
     def pop():
         return Instruction(lambda state: state.drop(), name="pop")
+
+    @staticmethod
+    def nop():
+        return Instruction(name="NO-OP")

@@ -46,14 +46,6 @@ class Runtime:
         entry = self.words.find(word)
         return entry
 
-    def immediate_find(self, w):
-        entry = self.words.find(w)
-
-        entry.compilable = False  # run immediately
-        self.eval(entry)
-
-        return w
-
     # XXX: workaround for getting a word from compilation
     # stream
     def word(self):
@@ -72,6 +64,17 @@ class Runtime:
 
         return s
 
+    def exit(self):
+        return ForthSignal.EXIT
+
+    def immediate(self):
+        # XXX? Hacky
+        # inserting a Non-compile word makes every new word non-compilable
+        return self.words.insert(Instruction(name="immediate", compiled=False))
+
+    def new_word(self, w):
+        return self.words.new_word(w)
+
     # IO
 
     def run_shell(self, command):
@@ -83,17 +86,8 @@ class Runtime:
 
     # evaluation
 
-    def exit(self):
-        return ForthSignal.EXIT
-
     def simple_eval(self, instruction):
         return instruction.run(self)
-
-    def immediate(self):
-        return self.words.header.set_flags(compiled=False)
-
-    def new_word(self, w):
-        return self.words.new_word(w)
 
     def expect(self, instruction):
         if not isinstance(instruction, self.expecting):

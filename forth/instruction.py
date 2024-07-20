@@ -42,6 +42,11 @@ class Instruction:
         except KeyError:
             self.compilable = True
 
+        try:
+            self.repeatable = flags["repeat"]
+        except KeyError:
+            self.repeatable = False
+
     def __add__(self, other):
         if not isinstance(other, Instruction):
             raise Forth_EvaluationError(
@@ -51,13 +56,19 @@ class Instruction:
         return Instruction(
             *(self.operations + other.operations),
             name=f"{self.name} + {other.name}",
-            compiled=self.compiled or other.compiled,
+            compiled=self.compiled and other.compiled,
         )
 
-    def interpret(self, state):
+    def execute(self, state):
         for op in self.operations:
             if op(state) == ForthSignal.EXIT:
-                break
+                return ForthSignal.EXIT
+
+        return ForthSignal.OK if self.repeatable else ForthSignal.EXIT
+
+    def interpret(self, state):
+        while self.execute(state) == ForthSignal.OK:
+            ...
 
         return InstructionReport(
             self.name,
@@ -110,7 +121,7 @@ class Instruction:
 # alternate dummy instruction type
 class Word(Instruction):
     def __init__(self, word):
-        self.token = word
+        self.token = word.upper()
 
     def run(self, state):
         raise Forth_EvaluationError("Trying to run Word type! (use FIND)")

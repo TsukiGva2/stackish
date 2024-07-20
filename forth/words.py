@@ -1,37 +1,13 @@
 from collections import OrderedDict
 
-from .configuration import HEADER_EMPTY
 from .errors import Forth_NotFound
-from .instruction import Instruction
 from .std.prelude import PreludeFunctions
 
 
-class DictEntry:
-    def __init__(self, header=HEADER_EMPTY):
-        self.header = header
-        self.flags = {"compiled": True}
-        self.code = []
-
-    def pack(self):
-        return {self.header: Instruction(*self.data, **self.flags)}
-
-    def new(self, w=HEADER_EMPTY):
-        self.header = w
-        self.code = []
-
-    def set_flags(self, **kwargs):
-        self.flags = kwargs
-
-        return kwargs
-
-    def insert(self, instruction):
-        self.code.append(instruction)
-
-
-class Words:
+class ForthDict:
     def __init__(self):
         # XXX: @DESIGN @WIP Why is this so damn ugly?
-        self.words = OrderedDict(
+        self.dict = OrderedDict(
             {
                 # IO
                 ".": PreludeFunctions.put(),
@@ -78,20 +54,24 @@ class Words:
             }
         )
 
-        self.header = DictEntry()
-
+    # TODO @OVERSIGHT
+    # these functions are just noise, remove them soon
     def list_string(self):
         return " ".join(self.words.keys())
 
     def list(self):
         return self.words.keys()
 
-    def new_word(self, w=HEADER_EMPTY):
-        self.header.new(w)
-        return w
+    def new_word(self, w):
+        if w in self.dict:
+            print(f"Warning: redefining {w}")
+
+        self.dict |= {w: PreludeFunctions.nop()}
 
     def insert(self, instruction):
-        self.header.insert(instruction)
+        tail = next(reversed(self.dict))
+
+        self.dict[tail] += instruction
         return instruction.name
 
     def find(self, w):
