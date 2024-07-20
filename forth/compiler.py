@@ -9,9 +9,6 @@ class Compiler(Tokenizer):
         Tokenizer.__init__(self)
         self.symbols = set()
 
-    def find(self, word):
-        return BuiltinFunctions.find(word)
-
     def create(self):
         return BuiltinFunctions.create(self)
 

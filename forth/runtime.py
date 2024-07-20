@@ -5,6 +5,7 @@ from repl.command import Command
 from .configuration import INTERPRET
 from .errors import Forth_EvaluationError, Forth_NotImplemented
 from .instruction import Instruction, Word, get_instruction_status
+from .signal import ForthSignal
 from .std.builtin import BuiltinFunctions
 from .words import Words
 
@@ -82,11 +83,21 @@ class Runtime:
 
     # evaluation
 
+    def exit(self):
+        return ForthSignal.EXIT
+
     def simple_eval(self, instruction):
         return instruction.run(self)
 
+    def immediate(self):
+        return self.words.header.set_flags(compiled=False)
+
+    def new_word(self, w):
+        return self.words.new_word(w)
+
     def expect(self, instruction):
-        assert isinstance(instruction, self.expecting)
+        if not isinstance(instruction, self.expecting):
+            raise Forth_EvaluationError(f"Unexpected value! expected {self.expecting}")
 
         if self.expecting == Word:
             self.expecting = None
@@ -103,6 +114,8 @@ class Runtime:
         if self.expecting is not None:
             return self.expect(instruction)
 
+        # I'm cooked
+        # FIXME @OVERSIGHT: How does this behave with EXIT?
         if isinstance(instruction, Word):
             return self.eval(self.find(instruction.token))
 

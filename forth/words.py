@@ -1,32 +1,31 @@
 from collections import OrderedDict
 
 from .configuration import HEADER_EMPTY
-from .errors import Forth_HeaderRedefinitionError, Forth_NotFound
+from .errors import Forth_NotFound
+from .instruction import Instruction
 from .std.prelude import PreludeFunctions
 
 
 class DictEntry:
     def __init__(self, header=HEADER_EMPTY):
         self.header = header
-        self.data = []
-
-    def set_word(self, w):
-        if self.header != HEADER_EMPTY:
-            raise Forth_HeaderRedefinitionError(
-                f"Trying to change unclosed WordHeader name: '{self.header}' -> {w}"
-            )
-
-        self.header = w
+        self.flags = {"compiled": True}
+        self.code = []
 
     def pack(self):
-        return {self.header: self.data}
+        return {self.header: Instruction(*self.data, **self.flags)}
 
     def new(self, w=HEADER_EMPTY):
         self.header = w
-        self.data = []
+        self.code = []
+
+    def set_flags(self, **kwargs):
+        self.flags = kwargs
+
+        return kwargs
 
     def insert(self, instruction):
-        self.instructions.append(instruction)
+        self.code.append(instruction)
 
 
 class Words:
@@ -73,14 +72,13 @@ class Words:
                 # "@": PreludeFunctions.fetchvar(),
                 # "!": PreludeFunctions.definevar(),
                 # Misc
-                #                                       -- NOTE @DESIGN: That's kind of ugly
                 "swap": PreludeFunctions.swap(),
                 "dup": PreludeFunctions.dup(),
                 "-.": PreludeFunctions.pop(),  #        -- FIXME: Lmao this string is literally invalid
             }
         )
 
-        # self.word
+        self.header = DictEntry()
 
     def list_string(self):
         return " ".join(self.words.keys())
@@ -89,17 +87,11 @@ class Words:
         return self.words.keys()
 
     def new_word(self, w=HEADER_EMPTY):
-        self.word_head
-        self.word_defs.append(DictEntry(w))
-        return w
-
-    def set_header_word(self, w):
-        self.header.set_word(w)
+        self.header.new(w)
         return w
 
     def insert(self, instruction):
         self.header.insert(instruction)
-
         return instruction.name
 
     def find(self, w):

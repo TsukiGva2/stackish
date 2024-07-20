@@ -2,6 +2,7 @@ from collections import namedtuple
 
 from .configuration import COMPILE
 from .errors import Forth_EvaluationError
+from .signal import ForthSignal
 
 InstructionStatus = namedtuple("InstructionStatus", ["INTERPRETED", "COMPILED"])
 
@@ -41,11 +42,27 @@ class Instruction:
         except KeyError:
             self.compilable = True
 
+    def __add__(self, other):
+        if not isinstance(other, Instruction):
+            raise Forth_EvaluationError(
+                f"Can't add Instruction with type '{type(other)}'"
+            )
+
+        return Instruction(
+            *(self.operations + other.operations),
+            name=f"{self.name} + {other.name}",
+            compiled=self.compiled or other.compiled,
+        )
+
     def interpret(self, state):
+        for op in self.operations:
+            if op(state) == ForthSignal.EXIT:
+                break
+
         return InstructionReport(
             self.name,
             InstructionStatus.INTERPRETED,
-            [op(state) for op in self.operations],
+            [],
         )
 
     def compile(self, state):

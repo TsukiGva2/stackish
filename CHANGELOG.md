@@ -1,5 +1,12 @@
 # v0.2.1 - WIP
 
+## Note
+
+This version is divided in two commits, one at work and the other
+at home
+
+- First commit: https://github.com/TsukiGva2/stackish/commit/b2f3d1edc0478c40f04970476206566b1d5c976e
+
 ## General
 
 ### Minor changes
@@ -7,6 +14,8 @@
 - Fixed typo in the `expect` function, which was defined as `expecting`
 - Improved COMMENTS.md to clarify other types of comments
 - Marked DOCUMENTATION.md as a TODO, it's currently a mess. Please don't consult it
+
+- Fixed tests, with added clarity and info, but still aren't really useful
 
 ### Mid changes
 

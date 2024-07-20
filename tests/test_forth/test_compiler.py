@@ -10,7 +10,7 @@ def test_compiler_literals():
     instructions = compiler.compile(compileTest)
 
     for i in instructions:
-        assert i.name == "literal"
+        assert i.name == "LITERAL"
 
 
 def test_compiler_words():
