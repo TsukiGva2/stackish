@@ -1,3 +1,86 @@
+# v0.2.2 - WIP
+
+## General
+
+### Big changes
+
+- Reworked `:` and `;` (function definition words) **__(1)__**
+- Added the CREATE word
+
+### Mid changes
+
+- Changed how the `state.word` function works **__(2)__**
+- Adding Instructions to one another using + works now **__(3)__**
+
+### Style changes
+
+- Better logging (still not ideal, but we're getting there)
+- Better error handling (same thing)
+- Error handling based on modules
+- Signal.py for handling the EXIT instruction (will be used in `if`)
+
+**.1**
+
+    With the newly defined CREATE word, which works by simply
+    running state.word() (to fetch a word from compilation stream),
+    then running state.new_word() to create the new word using the
+    word it got from comp stream.
+    
+**.2**
+
+    Now the stream of instructions/words coming from the compiler
+    is turned into an iterator, and now the runtime allows for
+    manipulation of such iterator, making it possible to define
+    how instructions/words are evaluated.
+
+    Relevant code:
+
+__@ forth/runtime.py__
+
+```py
+    ...
+
+    def exec(self, instructions):
++       self.instructions = iter(instructions)
+
+    ...
+```
+
+__@ forth/runtime.py__
+
+```py
+    ...
+
+    def expect(self, instruction_type):
++       try:
++           instruction = next(self.instructions)
++       except StopIteration:
++           raise Forth_Runtime_UnexpectedEOFError(
++               f"Unexpected EOF! expected {instruction_type}"
++           )
+
+    ...
+```
+
+    This code also shows the new error handling in action.
+
+**.3**
+
+    When you see:
+
+        NO-OP + LITERAL
+
+    for example, this means this instruction is a result of
+    adding the no-op instruction with the LITERAL instruction.
+
+    The word `:' is an interesting example, which calls:
+
+    WORD + CREATE + COMPILE
+
+    And then `;'
+
+    INTERPRET
+
 # v0.2.1 - WIP
 
 ## Note
