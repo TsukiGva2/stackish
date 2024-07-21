@@ -1,12 +1,12 @@
 import re
 
+from .compiler_error import Forth_CompilationEOF, Forth_CompilationError
 from .configuration import (
     DELIM_QUOTE_END,
     INDEX_QUOTE_BEGIN,
     INDEX_QUOTE_END,
     INDEX_SQUOTE_BEGIN,
 )
-from .errors import Forth_CompilationError
 
 
 class Tokenizer:
@@ -22,7 +22,9 @@ class Tokenizer:
         try:
             return next(self.words)
         except StopIteration:
-            raise EOFError(f"Unexpected EOF in definition for '{caller}'.")  # TODO
+            raise Forth_CompilationEOF(
+                f"Unexpected EOF in definition for '{caller}'."
+            )  # TODO
 
     def isword(self, w):
         if self.match_word.match(w):

@@ -14,9 +14,9 @@ def main():
     except EOFError:
         print("\nEOF")
         return True
-    # except Exception as err:
-    #    print(f"\n| Exception: {err}")
-    #    return False
+    except Exception as err:
+        print(f"\n| Exception: {err}")
+        return False
 
     return True
 

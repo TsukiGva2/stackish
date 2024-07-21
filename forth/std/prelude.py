@@ -16,6 +16,11 @@ class PreludeFunctions:
     def ask():
         return Instruction(lambda state: state.push(input(state.drop())), name="ask")
 
+    # debug word
+    @staticmethod
+    def peek():
+        return Instruction(lambda state: print(state.peek()), name="peek")
+
     # operators
     @staticmethod
     def add():
@@ -174,9 +179,7 @@ class PreludeFunctions:
 
     @staticmethod
     def compile():
-        return Instruction(
-            lambda state: state.switch(COMPILE), name="compile", compiled=False
-        )
+        return Instruction(lambda state: state.switch(COMPILE), name="compile")
 
     @staticmethod
     def interpret():
@@ -235,7 +238,7 @@ class PreludeFunctions:
             INTERPRET
         END
         """
-        return PreludeFunctions.create() + PreludeFunctions.interpret()
+        return PreludeFunctions.interpret()
 
     @staticmethod
     def branch():

@@ -1,5 +1,5 @@
+from .compiler_error import Forth_CompilationError
 from .configuration import DELIM_QUOTE_BEGIN, DELIM_SQUOTE_BEGIN
-from .errors import Forth_CompilationError
 from .std.builtin import BuiltinFunctions
 from .tokenizer import Tokenizer
 

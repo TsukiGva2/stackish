@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from .errors import Forth_NotFound
+from .runtime_error import Forth_Runtime_WordNotFoundError
 from .std.prelude import PreludeFunctions
 
 
@@ -11,7 +11,8 @@ class ForthDict:
             {
                 # IO
                 ".": PreludeFunctions.put(),
-                "read": PreludeFunctions.ask(),
+                "READ": PreludeFunctions.ask(),
+                "PEEK": PreludeFunctions.peek(),
                 # operators
                 "+": PreludeFunctions.add(),
                 "-": PreludeFunctions.sub(),
@@ -27,18 +28,19 @@ class ForthDict:
                 ">=": PreludeFunctions.greater_or_equals(),
                 "<=": PreludeFunctions.lesser_or_equals(),
                 # IF THEN
-                # "if": PreludeFunctions.implies(),     -- FIXME @WIP
-                # "or": PreludeFunctions.or_word(),     -- FIXME @WIP
-                # "else": PreludeFunctions.else_word(), -- FIXME @WIP
-                # "then": PreludeFunctions.end(),       -- FIXME @WIP
+                # "IF": PreludeFunctions.implies(),     -- FIXME @WIP
+                # "OR": PreludeFunctions.or_word(),     -- FIXME @WIP
+                # "ELSE": PreludeFunctions.else_word(), -- FIXME @WIP
+                # "THEN": PreludeFunctions.end(),       -- FIXME @WIP
                 # FUNCTIONS
-                # ":": PreludeFunctions.colon(),        -- FIXME @WIP
-                # ";": PreludeFunctions.endcolon(),     -- FIXME @WIP
+                ":": PreludeFunctions.colon(),
+                ";": PreludeFunctions.semicolon(),
+                "CREATE": PreludeFunctions.create(),  # exposing the POWER
                 "WORD": PreludeFunctions.word(),
-                "words": PreludeFunctions.words(),
+                "WORDS": PreludeFunctions.words(),
                 # environment
                 "$": PreludeFunctions.env(),
-                "export": PreludeFunctions.setenv(),
+                "EXPORT": PreludeFunctions.setenv(),
                 # Shell
                 "?": PreludeFunctions.run_command(),
                 # "|": PreludeFunctions.pipe(),         -- FIXME @WIP
@@ -48,8 +50,8 @@ class ForthDict:
                 # "@": PreludeFunctions.fetchvar(),
                 # "!": PreludeFunctions.definevar(),
                 # Misc
-                "swap": PreludeFunctions.swap(),
-                "dup": PreludeFunctions.dup(),
+                "SWAP": PreludeFunctions.swap(),
+                "DUP": PreludeFunctions.dup(),
                 "-.": PreludeFunctions.pop(),  #        -- FIXME: Lmao this string is literally invalid
             }
         )
@@ -57,16 +59,18 @@ class ForthDict:
     # TODO @OVERSIGHT
     # these functions are just noise, remove them soon
     def list_string(self):
-        return " ".join(self.words.keys())
+        return " ".join(self.dict.keys())
 
     def list(self):
-        return self.words.keys()
+        return self.dict.keys()
 
     def new_word(self, w):
         if w in self.dict:
             print(f"Warning: redefining {w}")
 
         self.dict |= {w: PreludeFunctions.nop()}
+
+        self.dict.move_to_end(w)
 
     def insert(self, instruction):
         tail = next(reversed(self.dict))
@@ -76,6 +80,6 @@ class ForthDict:
 
     def find(self, w):
         try:
-            return self.words[w]
+            return self.dict[w]
         except KeyError:
-            raise Forth_NotFound(f"Undefined word {w}")
+            raise Forth_Runtime_WordNotFoundError(f"Undefined word {w}")

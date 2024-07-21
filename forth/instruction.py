@@ -1,7 +1,8 @@
 from collections import namedtuple
 
 from .configuration import COMPILE
-from .errors import Forth_EvaluationError
+from .log import Forth_LogInstruction
+from .runtime_error import Forth_Runtime_EvaluationError
 from .signal import ForthSignal
 
 InstructionStatus = namedtuple("InstructionStatus", ["INTERPRETED", "COMPILED"])
@@ -42,21 +43,21 @@ class Instruction:
         except KeyError:
             self.compilable = True
 
-        try:
-            self.repeatable = flags["repeat"]
-        except KeyError:
-            self.repeatable = False
+        #       try:
+        #           self.repeatable = flags["repeat"]
+        #       except KeyError:
+        #           self.repeatable = False
 
     def __add__(self, other):
         if not isinstance(other, Instruction):
-            raise Forth_EvaluationError(
+            raise Forth_Runtime_EvaluationError(
                 f"Can't add Instruction with type '{type(other)}'"
             )
 
         return Instruction(
             *(self.operations + other.operations),
             name=f"{self.name} + {other.name}",
-            compiled=self.compiled and other.compiled,
+            compiled=self.compilable and other.compilable,
         )
 
     def execute(self, state):
@@ -64,11 +65,14 @@ class Instruction:
             if op(state) == ForthSignal.EXIT:
                 return ForthSignal.EXIT
 
-        return ForthSignal.OK if self.repeatable else ForthSignal.EXIT
+        return ForthSignal.OK
+        # return ForthSignal.OK if self.repeatable else ForthSignal.EXIT
 
     def interpret(self, state):
-        while self.execute(state) == ForthSignal.OK:
-            ...
+        #       while self.execute(state) == ForthSignal.OK:
+        #           ...
+
+        self.execute(state)
 
         return InstructionReport(
             self.name,
@@ -87,7 +91,7 @@ class Instruction:
     #   redefine run if compilable so it skips the check
     def run(self, state):
         # neat statement for debug -- TODO @IMPROVEMENT: Improve debugging (logging etc)
-        print(f"\t{self.name:<10} \t| {state.state} \t|Name | State")
+        Forth_LogInstruction(self)
 
         # FIXME @OVERSIGHT:
         # STATE CANT BE BOTH SKIP AND INTERPRET/COMPILE
@@ -124,4 +128,4 @@ class Word(Instruction):
         self.token = word.upper()
 
     def run(self, state):
-        raise Forth_EvaluationError("Trying to run Word type! (use FIND)")
+        raise Forth_Runtime_EvaluationError("Trying to run Word type! (use FIND)")
