@@ -43,11 +43,6 @@ class Instruction:
         except KeyError:
             self.compilable = True
 
-        #       try:
-        #           self.repeatable = flags["repeat"]
-        #       except KeyError:
-        #           self.repeatable = False
-
     def __add__(self, other):
         if not isinstance(other, Instruction):
             raise Forth_Runtime_EvaluationError(

@@ -21,10 +21,19 @@
 
 **.1**
 
-    With the newly defined CREATE word, which works by simply
-    running state.word() (to fetch a word from compilation stream),
-    then running state.new_word() to create the new word using the
-    word it got from comp stream.
+    Defined `:' and `;' as prelude words, using the new CREATE word.
+
+    CREATE is also a prelude word, it works by creating a new word in
+    the dictionary, the name of the new word is determined by the WORD
+    word, which fetches a word from compilation stream.
+
+    here is the definition for `:' ->
+        
+        : : CREATE COMPILE ;
+
+    here is the definition for `;' ->
+
+        : ; INTERPRET immediate ;
     
 **.2**
 

@@ -87,6 +87,12 @@ class Runtime:
     def word(self):
         return self.expect(Word)
 
+    def display_words(self):
+        return print(self.words.list_string())
+
+    def reset_words(self):
+        return self.words.reset()
+
     def insert(self, w):
         return self.words.insert(w)
 
@@ -133,7 +139,7 @@ class Runtime:
         if isinstance(instruction, Instruction):
             return instruction.run(self)
 
-        raise Forth_Runtime_EvaluationError(f"Undefined type: {type(instruction)}")
+        raise Forth_Runtime_EvaluationError(f"Unexpected type: {type(instruction)}")
 
     def exec(self, instructions):
         self.instructions = iter(instructions)

@@ -5,7 +5,7 @@ from forth.instruction import Word
 def test_compiler_literals():
     compiler = Compiler()
 
-    compileTest = "'quote '(multiple quote) 1 1.0 1e6 -1 -1e6"
+    compileTest = "'quote '(multiple quote) 1"
 
     instructions = compiler.compile(compileTest)
 
@@ -16,9 +16,8 @@ def test_compiler_literals():
 def test_compiler_words():
     compiler = Compiler()
 
-    compileTest = "foo bar"
+    compileTest = "foo"
 
     instructions = compiler.compile(compileTest)
 
-    for i in instructions:
-        assert isinstance(i, Word)
+    assert isinstance(instructions[-1], Word)

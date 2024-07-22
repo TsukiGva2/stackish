@@ -1,3 +1,4 @@
 # TODO
 def Log(s):
-    print(s)
+    # print(s)
+    ...

@@ -1,6 +1,9 @@
 # from .compiler import Compiler
+from collections import OrderedDict
+
 from forth.configuration import COMPILE, INTERPRET
 from forth.instruction import Instruction
+from forth.types import forth_type_to_string
 
 
 class PreludeFunctions:
@@ -115,7 +118,11 @@ class PreludeFunctions:
 
     @staticmethod
     def words():
-        return Instruction(lambda state: print(state.word_table()), name="words")
+        return Instruction(lambda state: state.display_words(), name="words")
+
+    @staticmethod
+    def reset():
+        return Instruction(lambda state: state.reset_words(), name="reset")
 
     # Get a word from input
     @staticmethod
@@ -166,10 +173,32 @@ class PreludeFunctions:
         """
         return PreludeFunctions.interpret()
 
+    # NOTE:
+    # The following are replacements to the forth words BRANCH
+    # and BRANCH0
     @staticmethod
-    def branch():
-        """ """
-        return Instruction()
+    def until():
+        """
+        single-word conditional looping
+
+        UNTIL <COND>
+
+        example:
+
+        : CHECK WORD DUP 'then = ;
+        UNTIL CHECK
+        """
+        return PreludeFunctions.word() + Instruction(
+            lambda state: state.until(forth_type_to_string(state.drop()))
+        )
+
+    @staticmethod
+    def until0():
+        """
+        Conditional UNTIL, runs the until word if stack value is not truthful
+        UNTIL0 <type>
+        """
+        return PreludeFunctions.word() + PreludeFunctions.swap() + Instruction()
 
     # environment
     # TODO @WIP: Use shell system to get and set env
@@ -205,3 +234,54 @@ class PreludeFunctions:
     @staticmethod
     def nop():
         return Instruction(name="NO-OP")
+
+
+Prelude = OrderedDict(
+    {
+        # IO
+        ".": PreludeFunctions.put(),
+        "READ": PreludeFunctions.ask(),
+        "PEEK": PreludeFunctions.peek(),
+        # operators
+        "+": PreludeFunctions.add(),
+        "-": PreludeFunctions.sub(),
+        "/": PreludeFunctions.div(),
+        "*": PreludeFunctions.mul(),
+        "^": PreludeFunctions.pow(),
+        "~": PreludeFunctions.non(),
+        # logic
+        "=": PreludeFunctions.equals(),
+        "~=": PreludeFunctions.nequals(),
+        ">": PreludeFunctions.greater(),
+        "<": PreludeFunctions.lesser(),
+        ">=": PreludeFunctions.greater_or_equals(),
+        "<=": PreludeFunctions.lesser_or_equals(),
+        # IF THEN
+        # "IF": PreludeFunctions.implies(),     -- FIXME @WIP
+        # "OR": PreludeFunctions.or_word(),     -- FIXME @WIP
+        # "ELSE": PreludeFunctions.else_word(), -- FIXME @WIP
+        # "THEN": PreludeFunctions.end(),       -- FIXME @WIP
+        # FUNCTIONS
+        ":": PreludeFunctions.colon(),
+        ";": PreludeFunctions.semicolon(),
+        "CREATE": PreludeFunctions.create(),  # exposing the POWER
+        "WORD": PreludeFunctions.word(),
+        "WORDS": PreludeFunctions.words(),
+        "RESET": PreludeFunctions.reset(),
+        # environment
+        "$": PreludeFunctions.env(),
+        "EXPORT": PreludeFunctions.setenv(),
+        # Shell
+        "?": PreludeFunctions.run_command(),
+        # "|": PreludeFunctions.pipe(),         -- FIXME @WIP
+        # "<-": PreludeFunctions.tofile(),      -- FIXME @WIP
+        # State                                 -- TODO @DESIGN @WIP:
+        #                                           Not really focused on state atm
+        # "@": PreludeFunctions.fetchvar(),
+        # "!": PreludeFunctions.definevar(),
+        # Misc
+        "SWAP": PreludeFunctions.swap(),
+        "DUP": PreludeFunctions.dup(),
+        "-.": PreludeFunctions.pop(),  #        -- FIXME: Lmao this string is literally invalid
+    }
+)
