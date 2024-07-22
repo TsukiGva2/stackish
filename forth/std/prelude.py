@@ -103,80 +103,6 @@ class PreludeFunctions:
             name="lesser_or_equals",
         )
 
-    # FIXME @WIP:
-    #    # logic_special
-    #    @staticmethod
-    #    def implies():
-    #        return Instruction(
-    #            lambda state: (state.switch(INTERPRET if state.drop() else SKIP)),
-    #            name="implies",
-    #        )
-
-    #    @staticmethod
-    #    def or_word():
-    #        """
-    #        : OR
-    #            _state? 'SKIP = =>
-    #        ;
-    #        """
-    #        return Instruction(
-    #            # _state? =
-    #            lambda state: state.push(state.state == SKIP),
-    #            # =>
-    #            *PreludeFunctions.implies().operations,
-    #            skippable=False,  # cant skip an or
-    #            # otherwise it could
-    #            # not reset the skipping
-    #            # it kinda serves as
-    #            # an alternate end
-    #            # which doubles down
-    #            # as a surprise IMPLIES(=>)
-    #            name="or"
-    #        )
-
-    #    @staticmethod
-    #    def end():
-    #        return Instruction(
-    #            # NOTE:
-    #            # This doesnt interfere with the COMPILE
-    #            # state at all because of the magic of
-    #            # Instruction flags, the COMPILED flag
-    #            # is set on all instructions by default
-    #            # and an Instruction with the COMPILED
-    #            # flag will not evaluate if the state is
-    #            # set to COMPILED.
-    #            lambda state: state.switch(INTERPRET),
-    #            skippable=False,  # Can't skip an end
-    #            # otherwise the skipping
-    #            # would never... end
-    #            name="end",
-    #        )
-
-    # TODO @WIP:
-    """
-    CREATE :
-    DOES>
-        WORD
-
-    @staticmethod
-    def colon():
-        return Instruction(
-            lambda state: state.switch(COMPILE),
-            lambda state: state.open_header(),
-            compiled=False,
-            name="colon",
-        )
-
-    @staticmethod
-    def endcolon():
-        return Instruction(
-            lambda state: state.switch(INTERPRET),
-            lambda state: state.close_header(),
-            compiled=False,
-            name="end_word_def",
-        )
-    """
-
     @staticmethod
     def compile():
         return Instruction(lambda state: state.switch(COMPILE), name="compile")
@@ -242,11 +168,7 @@ class PreludeFunctions:
 
     @staticmethod
     def branch():
-        """
-        : IF
-            WORD
-        ;
-        """
+        """ """
         return Instruction()
 
     # environment

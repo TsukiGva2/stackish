@@ -9,16 +9,17 @@ def main():
     forth: Final[System] = System()
     shell: Final[Shell] = Shell(forth)
 
-    try:
-        shell.loop()
-    except EOFError:
-        print("\nEOF")
-        return True
-    except Exception as err:
-        print(f"\n| Exception: {err}")
-        return False
+    while True:
+        try:
+            shell.loop()
+        except EOFError:
+            print("\nEOF")
+            return True
+        except Exception as err:
+            print(f"\n| Exception: {err}")
 
-    return True
+    # unreachable
+    # return True
 
 
 if __name__ == "__main__":

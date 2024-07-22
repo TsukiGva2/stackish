@@ -7,6 +7,7 @@ from .instruction import Instruction, Word, get_instruction_status
 from .runtime_error import (
     Forth_Runtime_EvaluationError,
     Forth_Runtime_NotImplementedError,
+    Forth_Runtime_UnderflowError,
     Forth_Runtime_UnexpectedEOFError,
 )
 from .signal import ForthSignal
@@ -33,7 +34,10 @@ class Runtime:
         return args
 
     def drop(self):
-        return self.stack.pop()
+        try:
+            return self.stack.pop()
+        except IndexError:
+            raise Forth_Runtime_UnderflowError("Stack underflow")
 
     def peek(self):
         try:

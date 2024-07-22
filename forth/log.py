@@ -6,10 +6,12 @@ import inspect
 # the LOGGING module does
 import re
 
+from stackish_log import Log
+
 
 # XXX: better logging
 def Forth_Log(s):
-    print(s)
+    Log(s)
 
 
 # XXX: all of this is temporary
