@@ -3,7 +3,6 @@ from collections import OrderedDict
 
 from forth.configuration import COMPILE, INTERPRET
 from forth.instruction import Instruction
-from forth.types import forth_type_to_string
 
 
 class PreludeFunctions:
@@ -129,6 +128,10 @@ class PreludeFunctions:
     def word():
         return Instruction(lambda state: state.word(), name="word")
 
+    @staticmethod
+    def scan():
+        return Instruction(lambda state: state.scan(state.drop()), name="scan")
+
     # EXIT an instruction
     @staticmethod
     def exit():
@@ -172,33 +175,6 @@ class PreludeFunctions:
         END
         """
         return PreludeFunctions.interpret()
-
-    # NOTE:
-    # The following are replacements to the forth words BRANCH
-    # and BRANCH0
-    @staticmethod
-    def until():
-        """
-        single-word conditional looping
-
-        UNTIL <COND>
-
-        example:
-
-        : CHECK WORD DUP 'then = ;
-        UNTIL CHECK
-        """
-        return PreludeFunctions.word() + Instruction(
-            lambda state: state.until(forth_type_to_string(state.drop()))
-        )
-
-    @staticmethod
-    def until0():
-        """
-        Conditional UNTIL, runs the until word if stack value is not truthful
-        UNTIL0 <type>
-        """
-        return PreludeFunctions.word() + PreludeFunctions.swap() + Instruction()
 
     # environment
     # TODO @WIP: Use shell system to get and set env
